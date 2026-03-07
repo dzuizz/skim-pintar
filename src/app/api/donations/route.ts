@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
+import { supabase } from '@/lib/supabase'
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,13 +13,13 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const donations = await prisma.donation.findMany({
-      where: { cycleMonth: month },
-      include: {
-        donor: { select: { name: true } },
-      },
-      orderBy: { createdAt: 'desc' },
-    })
+    const { data: donations, error } = await supabase
+      .from('donations')
+      .select('*, donors(name)')
+      .eq('cycle_month', month)
+      .order('created_at', { ascending: false })
+
+    if (error) throw error
 
     // Sort: PENDING first, then RECEIVED, then MISSED
     const statusOrder: Record<string, number> = {
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
       MISSED: 2,
     }
 
-    const sorted = donations.sort(
+    const sorted = (donations ?? []).sort(
       (a, b) => (statusOrder[a.status] ?? 3) - (statusOrder[b.status] ?? 3),
     )
 

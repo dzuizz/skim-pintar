@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
+import { supabase } from '@/lib/supabase'
 
 export async function PATCH(
   request: NextRequest,
@@ -31,11 +31,13 @@ export async function PATCH(
     }
 
     // Validate the donation exists
-    const existing = await prisma.donation.findUnique({
-      where: { id: donationId },
-    })
+    const { data: existing, error: findError } = await supabase
+      .from('donations')
+      .select('id')
+      .eq('id', donationId)
+      .single()
 
-    if (!existing) {
+    if (findError || !existing) {
       return NextResponse.json(
         { error: 'Donation not found' },
         { status: 404 },
@@ -47,28 +49,32 @@ export async function PATCH(
     const updateData: any = { status }
 
     if (status === 'RECEIVED' && receivedAt) {
-      updateData.receivedAt = new Date(receivedAt)
+      updateData.received_at = new Date(receivedAt).toISOString()
     } else if (status === 'RECEIVED') {
-      updateData.receivedAt = new Date()
+      updateData.received_at = new Date().toISOString()
     }
 
-    // If marking as non-received, clear receivedAt
+    // If marking as non-received, clear received_at
     if (status !== 'RECEIVED') {
-      updateData.receivedAt = null
+      updateData.received_at = null
     }
 
-    const updated = await prisma.donation.update({
-      where: { id: donationId },
-      data: updateData,
-    })
+    const { data: updated, error: updateError } = await supabase
+      .from('donations')
+      .update(updateData)
+      .eq('id', donationId)
+      .select()
+      .single()
+
+    if (updateError) throw updateError
 
     return NextResponse.json({
       id: updated.id,
       amount: updated.amount,
       reference: updated.reference,
-      cycleMonth: updated.cycleMonth,
+      cycleMonth: updated.cycle_month,
       status: updated.status,
-      receivedAt: updated.receivedAt,
+      receivedAt: updated.received_at,
     })
   } catch (error) {
     console.error('Donation update error:', error)
