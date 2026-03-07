@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
 
 // ============================================
 // ICON COMPONENT
@@ -245,21 +246,21 @@ export function LandingContent() {
   }, [])
 
   const tabData = BENEFIT_TABS[activeTab]
-  const navLink = `text-sm font-medium transition-colors ${navScrolled ? 'text-gray-600 hover:text-primary-800' : 'text-white/80 hover:text-white'}`
+  const navLink = `text-sm font-medium transition-colors ${navScrolled ? 'text-gray-600 dark:text-gray-300 hover:text-primary-800 dark:hover:text-primary-400' : 'text-white/80 hover:text-white'}`
 
   return (
-    <main className="bg-white overflow-x-hidden">
+    <main className="bg-white dark:bg-gray-900 overflow-x-hidden">
 
       {/* ================================================================ */}
       {/* NAVIGATION                                                       */}
       {/* ================================================================ */}
-      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${navScrolled ? 'bg-white/95 backdrop-blur-md shadow-[0_1px_3px_rgba(6,95,70,0.08)]' : ''}`}>
+      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${navScrolled ? 'bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-[0_1px_3px_rgba(6,95,70,0.08)]' : ''}`}>
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
             <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm ${navScrolled ? 'bg-primary-800 text-white' : 'bg-white/15 text-white'}`}>SP</div>
             <div>
-              <span className={`text-lg font-bold tracking-tight ${navScrolled ? 'text-primary-900' : 'text-white'}`}>Skim Pintar</span>
-              <span className={`hidden sm:inline ml-2 text-xs font-medium ${navScrolled ? 'text-gray-400' : 'text-white/50'}`}>Masjid Ar-Raudhah</span>
+              <span className={`text-lg font-bold tracking-tight ${navScrolled ? 'text-primary-900 dark:text-white' : 'text-white'}`}>Skim Pintar</span>
+              <span className={`hidden sm:inline ml-2 text-xs font-medium ${navScrolled ? 'text-gray-400 dark:text-gray-500' : 'text-white/50'}`}>Masjid Ar-Raudhah</span>
             </div>
           </Link>
 
@@ -269,6 +270,7 @@ export function LandingContent() {
             <a href="#pricing" className={navLink}>Pricing</a>
             <a href="#impact" className={navLink}>Impact</a>
             <Link href="/my" className={navLink}>My Dashboard</Link>
+            <ThemeToggle />
             <Link href="/pledge" className="bg-primary-700 hover:bg-primary-800 text-white px-5 py-2 rounded-lg text-sm font-semibold transition-colors shadow-lg shadow-primary-900/20">
               Become a Member
             </Link>
@@ -276,19 +278,19 @@ export function LandingContent() {
 
           {/* Mobile hamburger */}
           <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="md:hidden relative w-6 h-5" aria-label="Toggle menu">
-            <span className={`absolute left-0 h-0.5 w-6 rounded transition-all duration-300 ${navScrolled ? 'bg-gray-700' : 'bg-white'} ${mobileMenuOpen ? 'top-2.5 rotate-45' : 'top-0'}`} />
-            <span className={`absolute left-0 top-2 h-0.5 w-6 rounded transition-all duration-300 ${navScrolled ? 'bg-gray-700' : 'bg-white'} ${mobileMenuOpen ? 'opacity-0' : ''}`} />
-            <span className={`absolute left-0 h-0.5 w-6 rounded transition-all duration-300 ${navScrolled ? 'bg-gray-700' : 'bg-white'} ${mobileMenuOpen ? 'top-2.5 -rotate-45' : 'top-4'}`} />
+            <span className={`absolute left-0 h-0.5 w-6 rounded transition-all duration-300 ${navScrolled ? 'bg-gray-700 dark:bg-gray-200' : 'bg-white'} ${mobileMenuOpen ? 'top-2.5 rotate-45' : 'top-0'}`} />
+            <span className={`absolute left-0 top-2 h-0.5 w-6 rounded transition-all duration-300 ${navScrolled ? 'bg-gray-700 dark:bg-gray-200' : 'bg-white'} ${mobileMenuOpen ? 'opacity-0' : ''}`} />
+            <span className={`absolute left-0 h-0.5 w-6 rounded transition-all duration-300 ${navScrolled ? 'bg-gray-700 dark:bg-gray-200' : 'bg-white'} ${mobileMenuOpen ? 'top-2.5 -rotate-45' : 'top-4'}`} />
           </button>
         </div>
 
         {/* Mobile menu */}
-        <div className={`md:hidden overflow-hidden transition-all duration-300 ${mobileMenuOpen ? 'max-h-80 border-t border-gray-100' : 'max-h-0'} bg-white`}>
+        <div className={`md:hidden overflow-hidden transition-all duration-300 ${mobileMenuOpen ? 'max-h-80 border-t border-gray-100 dark:border-gray-800' : 'max-h-0'} bg-white dark:bg-gray-900`}>
           <div className="px-6 py-4 flex flex-col gap-3">
-            <a href="#benefits" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-gray-700 py-2">Benefits</a>
-            <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-gray-700 py-2">Pricing</a>
-            <a href="#impact" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-gray-700 py-2">Impact</a>
-            <Link href="/my" className="text-sm font-medium text-gray-700 py-2">My Dashboard</Link>
+            <a href="#benefits" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-gray-700 dark:text-gray-200 py-2">Benefits</a>
+            <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-gray-700 dark:text-gray-200 py-2">Pricing</a>
+            <a href="#impact" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-gray-700 dark:text-gray-200 py-2">Impact</a>
+            <Link href="/my" className="text-sm font-medium text-gray-700 dark:text-gray-200 py-2">My Dashboard</Link>
             <Link href="/pledge" className="bg-primary-700 text-white text-center px-5 py-2.5 rounded-lg text-sm font-semibold mt-1">Become a Member</Link>
           </div>
         </div>
@@ -316,7 +318,7 @@ export function LandingContent() {
 
         {/* Curved section divider */}
         <div className="absolute -bottom-1 left-0 right-0 z-10" aria-hidden="true">
-          <svg viewBox="0 0 1440 80" fill="white" preserveAspectRatio="none" className="w-full h-12 sm:h-20">
+          <svg viewBox="0 0 1440 80" preserveAspectRatio="none" className="w-full h-12 sm:h-20 fill-white dark:fill-gray-900">
             <path d="M0 80 C360 10 1080 10 1440 80 L1440 80 L0 80 Z" />
           </svg>
         </div>
@@ -361,13 +363,13 @@ export function LandingContent() {
       {/* ================================================================ */}
       {/* BENEFITS - TAILORED FOR EVERY AGE                                */}
       {/* ================================================================ */}
-      <section id="benefits" className="relative py-24 sm:py-32 bg-white islamic-pattern scroll-mt-20">
+      <section id="benefits" className="relative py-24 sm:py-32 bg-white dark:bg-gray-900 islamic-pattern scroll-mt-20">
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center reveal">
-            <p className="text-sm font-semibold text-gold-600 uppercase tracking-wider">Membership Benefits</p>
-            <h2 className="mt-3 text-3xl sm:text-4xl font-extrabold text-primary-900 tracking-tight">Tailored for Every Age</h2>
+            <p className="text-sm font-semibold text-gold-600 dark:text-gold-400 uppercase tracking-wider">Membership Benefits</p>
+            <h2 className="mt-3 text-3xl sm:text-4xl font-extrabold text-primary-900 dark:text-white tracking-tight">Tailored for Every Age</h2>
             <div className="mx-auto mt-4 h-1 w-16 rounded-full bg-gold-500" />
-            <p className="mt-4 text-gray-500 max-w-lg mx-auto">From teenagers to seniors, every member gets benefits designed for their stage of life.</p>
+            <p className="mt-4 text-gray-500 dark:text-gray-400 max-w-lg mx-auto">From teenagers to seniors, every member gets benefits designed for their stage of life.</p>
           </div>
 
           {/* Tab selector */}
@@ -379,9 +381,9 @@ export function LandingContent() {
                 <button
                   key={key}
                   onClick={() => setActiveTab(key)}
-                  className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all ${active ? 'bg-primary-800 text-white shadow-lg shadow-primary-900/20' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                  className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all ${active ? 'bg-primary-800 text-white shadow-lg shadow-primary-900/20' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
                 >
-                  {tab.label} <span className={`ml-1 text-xs ${active ? 'text-primary-200' : 'text-gray-400'}`}>{tab.age}</span>
+                  {tab.label} <span className={`ml-1 text-xs ${active ? 'text-primary-200' : 'text-gray-400 dark:text-gray-500'}`}>{tab.age}</span>
                 </button>
               )
             })}
@@ -390,12 +392,12 @@ export function LandingContent() {
           {/* Benefits grid */}
           <div key={activeTab} className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 tab-enter">
             {tabData.benefits.map((b, i) => (
-              <div key={i} className="bg-white border border-gray-100 rounded-2xl p-6 card-hover">
-                <div className="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center text-primary-700 mb-4">
+              <div key={i} className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl p-6 card-hover">
+                <div className="w-10 h-10 rounded-xl bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center text-primary-700 dark:text-primary-400 mb-4">
                   <Icon name={b.icon} className="w-5 h-5" />
                 </div>
-                <h3 className="font-bold text-primary-900 text-base">{b.title}</h3>
-                <p className="mt-1.5 text-sm text-gray-500 leading-relaxed">{b.desc}</p>
+                <h3 className="font-bold text-primary-900 dark:text-primary-100 text-base">{b.title}</h3>
+                <p className="mt-1.5 text-sm text-gray-500 dark:text-gray-400 leading-relaxed">{b.desc}</p>
               </div>
             ))}
           </div>
@@ -405,22 +407,22 @@ export function LandingContent() {
       {/* ================================================================ */}
       {/* PERKS - FOR EVERYONE                                             */}
       {/* ================================================================ */}
-      <section id="perks" className="py-24 sm:py-32 bg-warmWhite scroll-mt-20">
+      <section id="perks" className="py-24 sm:py-32 bg-warmWhite dark:bg-gray-800 scroll-mt-20">
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center reveal">
-            <p className="text-sm font-semibold text-gold-600 uppercase tracking-wider">Member Perks</p>
-            <h2 className="mt-3 text-3xl sm:text-4xl font-extrabold text-primary-900 tracking-tight">For Everyone</h2>
+            <p className="text-sm font-semibold text-gold-600 dark:text-gold-400 uppercase tracking-wider">Member Perks</p>
+            <h2 className="mt-3 text-3xl sm:text-4xl font-extrabold text-primary-900 dark:text-white tracking-tight">For Everyone</h2>
             <div className="mx-auto mt-4 h-1 w-16 rounded-full bg-gold-500" />
           </div>
 
           <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {PERKS.map((perk, i) => (
-              <div key={i} className={`reveal reveal-delay-${Math.min(i, 7)} gold-shimmer bg-white rounded-2xl p-6 border border-gray-100 card-hover`}>
-                <div className="w-10 h-10 rounded-xl bg-gold-50 flex items-center justify-center text-gold-700 mb-4">
+              <div key={i} className={`reveal reveal-delay-${Math.min(i, 7)} gold-shimmer bg-white dark:bg-gray-900 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 card-hover`}>
+                <div className="w-10 h-10 rounded-xl bg-gold-50 dark:bg-gold-900/20 flex items-center justify-center text-gold-700 dark:text-gold-400 mb-4">
                   <Icon name={perk.icon} className="w-5 h-5" />
                 </div>
-                <h3 className="font-bold text-primary-900 text-sm">{perk.title}</h3>
-                <p className="mt-1.5 text-sm text-gray-500 leading-relaxed">{perk.desc}</p>
+                <h3 className="font-bold text-primary-900 dark:text-primary-100 text-sm">{perk.title}</h3>
+                <p className="mt-1.5 text-sm text-gray-500 dark:text-gray-400 leading-relaxed">{perk.desc}</p>
               </div>
             ))}
           </div>
@@ -430,11 +432,11 @@ export function LandingContent() {
       {/* ================================================================ */}
       {/* PRICING                                                          */}
       {/* ================================================================ */}
-      <section id="pricing" className="py-24 sm:py-32 bg-white islamic-pattern scroll-mt-20">
+      <section id="pricing" className="py-24 sm:py-32 bg-white dark:bg-gray-900 islamic-pattern scroll-mt-20">
         <div className="max-w-5xl mx-auto px-6">
           <div className="text-center reveal">
-            <p className="text-sm font-semibold text-gold-600 uppercase tracking-wider">Simple Pricing</p>
-            <h2 className="mt-3 text-3xl sm:text-4xl font-extrabold text-primary-900 tracking-tight">Choose Your Plan</h2>
+            <p className="text-sm font-semibold text-gold-600 dark:text-gold-400 uppercase tracking-wider">Simple Pricing</p>
+            <h2 className="mt-3 text-3xl sm:text-4xl font-extrabold text-primary-900 dark:text-white tracking-tight">Choose Your Plan</h2>
             <div className="mx-auto mt-4 h-1 w-16 rounded-full bg-gold-500" />
           </div>
 
@@ -445,7 +447,7 @@ export function LandingContent() {
                 className={`reveal reveal-delay-${i + 1} rounded-2xl overflow-hidden ${
                   plan.popular
                     ? 'pricing-popular text-white shadow-2xl shadow-primary-900/30 ring-2 ring-gold-400 lg:-mt-4 lg:mb-[-16px]'
-                    : 'bg-white border border-gray-200 card-hover'
+                    : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 card-hover'
                 }`}
               >
                 {plan.popular && (
@@ -454,10 +456,10 @@ export function LandingContent() {
                   </div>
                 )}
                 <div className="p-8">
-                  <h3 className={`text-lg font-bold ${plan.popular ? 'text-white' : 'text-primary-900'}`}>{plan.name}</h3>
+                  <h3 className={`text-lg font-bold ${plan.popular ? 'text-white' : 'text-primary-900 dark:text-primary-100'}`}>{plan.name}</h3>
                   <div className="mt-4 flex items-baseline gap-1">
-                    <span className={`text-5xl font-extrabold ${plan.popular ? 'text-white' : 'text-primary-900'}`}>${plan.price}</span>
-                    <span className={`text-sm ${plan.popular ? 'text-primary-200' : 'text-gray-400'}`}>/month</span>
+                    <span className={`text-5xl font-extrabold ${plan.popular ? 'text-white' : 'text-primary-900 dark:text-white'}`}>${plan.price}</span>
+                    <span className={`text-sm ${plan.popular ? 'text-primary-200' : 'text-gray-400 dark:text-gray-500'}`}>/month</span>
                   </div>
                   <ul className="mt-8 space-y-3">
                     {plan.features.map((feature, j) => (
@@ -465,7 +467,7 @@ export function LandingContent() {
                         <svg className={`w-4 h-4 flex-shrink-0 mt-0.5 ${plan.popular ? 'text-gold-300' : 'text-primary-600'}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round">
                           <polyline points="20 6 9 17 4 12" />
                         </svg>
-                        <span className={`text-sm ${plan.popular ? 'text-primary-100' : 'text-gray-600'}`}>{feature}</span>
+                        <span className={`text-sm ${plan.popular ? 'text-primary-100' : 'text-gray-600 dark:text-gray-300'}`}>{feature}</span>
                       </li>
                     ))}
                   </ul>
@@ -484,7 +486,7 @@ export function LandingContent() {
             ))}
           </div>
 
-          <p className="mt-10 text-center text-sm text-gray-500 reveal">
+          <p className="mt-10 text-center text-sm text-gray-500 dark:text-gray-400 reveal">
             250% tax deduction on donations (IPC-registered mosque). Cash payment available at mosque counter.
           </p>
         </div>
@@ -493,11 +495,11 @@ export function LandingContent() {
       {/* ================================================================ */}
       {/* LOYALTY REWARDS                                                  */}
       {/* ================================================================ */}
-      <section id="rewards" className="py-24 sm:py-32 bg-cream scroll-mt-20">
+      <section id="rewards" className="py-24 sm:py-32 bg-cream dark:bg-gray-800 scroll-mt-20">
         <div className="max-w-3xl mx-auto px-6">
           <div className="text-center reveal">
-            <p className="text-sm font-semibold text-gold-600 uppercase tracking-wider">Loyalty Rewards</p>
-            <h2 className="mt-3 text-3xl sm:text-4xl font-extrabold text-primary-900 tracking-tight">The Longer You Stay, the More You Get</h2>
+            <p className="text-sm font-semibold text-gold-600 dark:text-gold-400 uppercase tracking-wider">Loyalty Rewards</p>
+            <h2 className="mt-3 text-3xl sm:text-4xl font-extrabold text-primary-900 dark:text-white tracking-tight">The Longer You Stay, the More You Get</h2>
             <div className="mx-auto mt-4 h-1 w-16 rounded-full bg-gold-500" />
           </div>
 
@@ -512,8 +514,8 @@ export function LandingContent() {
                     <span className="text-white text-sm font-bold">{i + 1}</span>
                   </div>
                   <div className="pt-2.5">
-                    <p className="text-sm font-bold text-gold-700 uppercase tracking-wider">{m.duration}</p>
-                    <p className="mt-1 text-base text-primary-900 font-medium">{m.reward}</p>
+                    <p className="text-sm font-bold text-gold-700 dark:text-gold-400 uppercase tracking-wider">{m.duration}</p>
+                    <p className="mt-1 text-base text-primary-900 dark:text-primary-100 font-medium">{m.reward}</p>
                   </div>
                 </div>
               ))}
@@ -554,9 +556,9 @@ export function LandingContent() {
       {/* ================================================================ */}
       {/* CTA                                                              */}
       {/* ================================================================ */}
-      <section className="py-24 sm:py-32 bg-white islamic-pattern">
+      <section className="py-24 sm:py-32 bg-white dark:bg-gray-900 islamic-pattern">
         <div className="max-w-3xl mx-auto px-6 text-center">
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-primary-900 tracking-tight reveal">
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-primary-900 dark:text-white tracking-tight reveal">
             Ready to Join Our Community?
           </h2>
           <div className="mx-auto mt-4 h-1 w-16 rounded-full bg-gold-500 reveal reveal-delay-1" />
@@ -565,12 +567,12 @@ export function LandingContent() {
             <Link href="/pledge" className="bg-primary-800 hover:bg-primary-700 text-white px-8 py-3.5 rounded-xl text-base font-semibold transition-all shadow-xl shadow-primary-900/20 hover:-translate-y-0.5">
               Become a Member
             </Link>
-            <Link href="/pledge" className="border-2 border-primary-200 hover:border-primary-300 text-primary-800 px-8 py-3.5 rounded-xl text-base font-semibold transition-all hover:-translate-y-0.5">
+            <Link href="/pledge" className="border-2 border-primary-200 dark:border-primary-700 hover:border-primary-300 dark:hover:border-primary-500 text-primary-800 dark:text-primary-200 px-8 py-3.5 rounded-xl text-base font-semibold transition-all hover:-translate-y-0.5">
               Gift a Membership
             </Link>
           </div>
 
-          <p className="mt-8 text-sm text-gray-500 max-w-md mx-auto leading-relaxed reveal reveal-delay-3">
+          <p className="mt-8 text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto leading-relaxed reveal reveal-delay-3">
             Can&apos;t afford it? No problem. Ask a member to sponsor your family — it&apos;s what community is for.
           </p>
         </div>
