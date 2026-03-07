@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { SiteNav } from '@/components/site-nav'
 import { Stepper } from '@/components/ui/stepper'
 import { Button } from '@/components/ui/button'
 import { StepContact } from '@/components/donor/step-contact'
@@ -52,7 +53,6 @@ export default function PledgePage() {
 
   function handleChange(partial: Partial<PledgeFormData>) {
     setFormData((prev) => ({ ...prev, ...partial }))
-    // Clear related errors
     const keys = Object.keys(partial)
     setErrors((prev) => {
       const next = { ...prev }
@@ -151,16 +151,14 @@ export default function PledgePage() {
   const isLastStep = currentStep === STEPS.length - 1
 
   return (
-    <main className="min-h-screen bg-warmWhite">
-      {/* Header */}
-      <div className="bg-primary-800">
-        <div className="mx-auto max-w-2xl px-6 py-6 text-center">
-          <h1 className="text-xl font-bold text-white sm:text-2xl">
-            Start Your Pledge
-          </h1>
-          <p className="mt-1 text-sm text-primary-200">
-            Masjid Ar-Raudhah Skim Pintar
-          </p>
+    <main className="min-h-screen bg-warmWhite dark:bg-gray-900">
+      <SiteNav />
+
+      {/* Page title */}
+      <div className="bg-primary-800 pb-6">
+        <div className="mx-auto max-w-2xl px-6 pt-4 text-center">
+          <h1 className="text-xl font-bold text-white sm:text-2xl">Start Your Pledge</h1>
+          <p className="mt-1 text-sm text-primary-200">Set up in under 2 minutes</p>
         </div>
       </div>
 
@@ -178,16 +176,12 @@ export default function PledgePage() {
           <StepAmount data={formData} onChange={handleChange} errors={errors} />
         )}
         {currentStep === 2 && (
-          <StepConfirm
-            data={formData}
-            agreed={agreed}
-            onAgreeChange={setAgreed}
-          />
+          <StepConfirm data={formData} agreed={agreed} onAgreeChange={setAgreed} />
         )}
 
         {/* Submit error */}
         {submitError && (
-          <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-center">
+          <div className="mt-4 rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-3 text-center">
             <p className="text-sm text-red-600">{submitError}</p>
           </div>
         )}

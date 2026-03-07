@@ -85,10 +85,10 @@ export function DonorLogin({ onLogin }: DonorLoginProps) {
       <Card>
         <CardContent className="py-8">
           <div className="text-center mb-6">
-            <h2 className="text-xl font-semibold text-primary-800">
+            <h2 className="text-xl font-semibold text-primary-800 dark:text-primary-200">
               Access Your Dashboard
             </h2>
-            <p className="mt-2 text-sm text-gray-500 leading-relaxed">
+            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
               Enter the phone number and name you used when setting up your pledge
             </p>
           </div>
@@ -114,7 +114,7 @@ export function DonorLogin({ onLogin }: DonorLoginProps) {
             />
 
             {error && (
-              <div className="rounded-lg border border-red-200 bg-red-50 p-3">
+              <div className="rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-3">
                 <p className="text-sm text-red-600">{error}</p>
               </div>
             )}

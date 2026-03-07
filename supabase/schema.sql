@@ -24,6 +24,9 @@ CREATE TABLE pledges (
   frequency frequency_type NOT NULL DEFAULT 'MONTHLY',
   reminder_day INTEGER NOT NULL DEFAULT 1 CHECK (reminder_day BETWEEN 1 AND 28),
   status pledge_status_type NOT NULL DEFAULT 'ACTIVE',
+  missed_count INTEGER NOT NULL DEFAULT 0,
+  grace_deadline TIMESTAMPTZ,
+  initiative_priorities JSONB NOT NULL DEFAULT '[]',
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -59,6 +62,7 @@ CREATE TABLE transparency_config (
   percentage INTEGER NOT NULL CHECK (percentage BETWEEN 0 AND 100),
   description TEXT NOT NULL,
   sort_order INTEGER NOT NULL,
+  target NUMERIC(10,2) NOT NULL DEFAULT 0,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 

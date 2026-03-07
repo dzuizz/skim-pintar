@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
 import Link from 'next/link'
 import SessionProvider from '@/components/providers/SessionProvider'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
 
 const navItems = [
   {
@@ -87,7 +88,7 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
   // Show loading while checking session
   if (status === 'loading') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="flex items-center gap-3 text-primary-700">
           <svg
             className="animate-spin h-6 w-6"
@@ -128,7 +129,7 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen flex bg-gray-50">
+    <div className="min-h-screen flex bg-gray-50 dark:bg-gray-900">
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div
@@ -139,12 +140,12 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-primary-900 text-white flex flex-col transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:z-auto ${
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-primary-900 dark:bg-gray-800 text-white flex flex-col transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:z-auto ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         {/* Brand */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-primary-800">
+        <div className="flex items-center justify-between px-6 py-5 border-b border-primary-800 dark:border-gray-700">
           <div>
             <h2 className="text-lg font-bold tracking-tight">Skim Pintar</h2>
             <span className="text-xs text-primary-300 font-medium uppercase tracking-wider">
@@ -171,7 +172,7 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                 isActive(item.href)
                   ? 'bg-gold-500/20 text-gold-300'
-                  : 'text-primary-200 hover:bg-primary-800 hover:text-white'
+                  : 'text-primary-200 hover:bg-primary-800 dark:hover:bg-gray-700 hover:text-white'
               }`}
             >
               {item.icon}
@@ -181,10 +182,10 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
         </nav>
 
         {/* Sidebar footer - Logout */}
-        <div className="px-3 py-4 border-t border-primary-800">
+        <div className="px-3 py-4 border-t border-primary-800 dark:border-gray-700">
           <button
             onClick={() => signOut({ callbackUrl: '/admin/login' })}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-primary-200 hover:bg-primary-800 hover:text-white transition-colors w-full"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-primary-200 hover:bg-primary-800 dark:hover:bg-gray-700 hover:text-white transition-colors w-full"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -197,27 +198,28 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
       {/* Main area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top bar */}
-        <header className="sticky top-0 z-30 bg-white border-b border-gray-200 px-4 sm:px-6 h-16 flex items-center justify-between">
+        <header className="sticky top-0 z-30 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 sm:px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             {/* Mobile hamburger */}
             <button
-              className="lg:hidden p-1.5 rounded-lg text-gray-500 hover:bg-gray-100"
+              className="lg:hidden p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
               onClick={() => setSidebarOpen(true)}
             >
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
-            <h1 className="text-lg font-semibold text-gray-800">{currentTitle}</h1>
+            <h1 className="text-lg font-semibold text-gray-800 dark:text-gray-100">{currentTitle}</h1>
           </div>
 
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-600 hidden sm:block">
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <span className="text-sm text-gray-600 dark:text-gray-400 hidden sm:block">
               {session.user?.name || session.user?.email}
             </span>
             <button
               onClick={() => signOut({ callbackUrl: '/admin/login' })}
-              className="text-sm text-gray-500 hover:text-gray-700 font-medium hidden sm:block"
+              className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 font-medium hidden sm:block"
             >
               Logout
             </button>
@@ -225,7 +227,9 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 p-6">{children}</main>
+        <main className="flex-1 p-4 sm:p-6 lg:p-8">
+          <div className="mx-auto max-w-7xl">{children}</div>
+        </main>
       </div>
     </div>
   )

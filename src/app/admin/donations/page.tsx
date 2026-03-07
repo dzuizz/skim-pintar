@@ -89,10 +89,10 @@ export default async function AdminDonationsPage({ searchParams }: PageProps) {
                 </svg>
               </div>
               <div className="min-w-0">
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                   {formatCurrency(receivedTotal)}
                 </p>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
                   {received.length} Received
                 </p>
               </div>
@@ -120,10 +120,10 @@ export default async function AdminDonationsPage({ searchParams }: PageProps) {
                 </svg>
               </div>
               <div className="min-w-0">
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                   {formatCurrency(pendingTotal)}
                 </p>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
                   {pending.length} Pending
                 </p>
               </div>
@@ -151,10 +151,10 @@ export default async function AdminDonationsPage({ searchParams }: PageProps) {
                 </svg>
               </div>
               <div className="min-w-0">
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                   {formatCurrency(missedTotal)}
                 </p>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
                   {missed.length} Missed
                 </p>
               </div>

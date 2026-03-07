@@ -12,6 +12,7 @@ interface CategoryRow {
   percentage: number
   description: string
   sortOrder: number
+  target: number
 }
 
 export default function TransparencyConfigPage() {
@@ -32,6 +33,7 @@ export default function TransparencyConfigPage() {
           percentage: c.percentage,
           description: c.description,
           sortOrder: c.sortOrder ?? i,
+          target: c.target ?? 0,
         })),
       )
     } catch {
@@ -65,6 +67,7 @@ export default function TransparencyConfigPage() {
         percentage: 0,
         description: '',
         sortOrder: prev.length,
+        target: 0,
       },
     ])
     setMessage(null)
@@ -88,6 +91,7 @@ export default function TransparencyConfigPage() {
         percentage: c.percentage,
         description: c.description,
         sortOrder: i,
+        target: c.target,
       }))
 
       const res = await fetch('/api/transparency', {
@@ -109,6 +113,7 @@ export default function TransparencyConfigPage() {
           percentage: c.percentage,
           description: c.description,
           sortOrder: c.sortOrder,
+          target: c.target ?? 0,
         })),
       )
       setMessage({ type: 'success', text: 'Transparency configuration saved successfully' })
@@ -186,7 +191,7 @@ export default function TransparencyConfigPage() {
                     )}
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-[1fr_100px] gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-[1fr_100px_120px] gap-3">
                     <Input
                       label="Name"
                       placeholder="e.g., Building Maintenance"
@@ -202,6 +207,17 @@ export default function TransparencyConfigPage() {
                       value={cat.percentage}
                       onChange={(e) =>
                         updateCategory(index, 'percentage', parseInt(e.target.value) || 0)
+                      }
+                    />
+                    <Input
+                      label="Annual Target"
+                      type="number"
+                      min={0}
+                      step={100}
+                      placeholder="0"
+                      value={cat.target}
+                      onChange={(e) =>
+                        updateCategory(index, 'target', parseFloat(e.target.value) || 0)
                       }
                     />
                   </div>

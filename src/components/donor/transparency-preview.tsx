@@ -35,7 +35,7 @@ export function TransparencyPreview({
   return (
     <Card>
       <CardContent className="py-6">
-        <h3 className="text-lg font-semibold text-primary-800 mb-4">
+        <h3 className="text-lg font-semibold text-primary-800 dark:text-primary-200 mb-4">
           Where Your {formatCurrency(amount)} Could Go
         </h3>
 
@@ -62,14 +62,14 @@ export function TransparencyPreview({
                 />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-baseline justify-between gap-2">
-                    <span className="font-medium text-gray-900">
+                    <span className="font-medium text-gray-900 dark:text-gray-100">
                       {cat.category}
                     </span>
-                    <span className="text-sm text-gray-500 flex-shrink-0">
+                    <span className="text-sm text-gray-500 dark:text-gray-400 flex-shrink-0">
                       {cat.percentage}% &middot; {formatCurrency(dollarAmount)}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-500 mt-0.5">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
                     {cat.description}
                   </p>
                 </div>
@@ -80,7 +80,7 @@ export function TransparencyPreview({
 
         {/* Disclaimer */}
         {showDisclaimer && (
-          <p className="mt-6 text-xs text-gray-400 leading-relaxed border-t border-gray-100 pt-4">
+          <p className="mt-6 text-xs text-gray-400 dark:text-gray-500 leading-relaxed border-t border-gray-100 dark:border-gray-700 pt-4">
             This breakdown is illustrative and reflects how Masjid Ar-Raudhah
             generally allocates its resources. It is not a binding allocation of
             your specific donation. All donations support Ar-Raudhah&apos;s

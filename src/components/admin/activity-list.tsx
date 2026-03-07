@@ -75,18 +75,18 @@ export function ActivityList({ items }: ActivityListProps) {
             No recent activity
           </p>
         ) : (
-          <ul className="divide-y divide-gray-100">
+          <ul className="divide-y divide-gray-100 dark:divide-gray-700">
             {items.map((item) => (
               <li
                 key={item.id}
                 className="flex items-start gap-3 py-3 first:pt-0 last:pb-0"
               >
-                <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-50">
+                <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-50 dark:bg-gray-700">
                   {item.type === 'pledge' ? <PledgeIcon /> : <DonationIcon />}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm text-gray-700">{item.description}</p>
-                  <p className="mt-0.5 text-xs text-gray-400">
+                  <p className="text-sm text-gray-700 dark:text-gray-300">{item.description}</p>
+                  <p className="mt-0.5 text-xs text-gray-400 dark:text-gray-500">
                     {relativeTime(item.time as Date | string)}
                   </p>
                 </div>

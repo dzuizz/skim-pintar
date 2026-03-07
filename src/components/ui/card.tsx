@@ -6,7 +6,7 @@ const Card = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
     <div
       ref={ref}
       className={cn(
-        'bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden',
+        'bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden',
         className,
       )}
       {...props}
@@ -26,7 +26,7 @@ const CardTitle = forwardRef<HTMLHeadingElement, HTMLAttributes<HTMLHeadingEleme
   ({ className, ...props }, ref) => (
     <h3
       ref={ref}
-      className={cn('text-lg font-semibold text-primary-800', className)}
+      className={cn('text-lg font-semibold text-primary-800 dark:text-primary-200', className)}
       {...props}
     />
   ),
@@ -37,7 +37,7 @@ const CardDescription = forwardRef<HTMLParagraphElement, HTMLAttributes<HTMLPara
   ({ className, ...props }, ref) => (
     <p
       ref={ref}
-      className={cn('text-sm text-gray-500 mt-1', className)}
+      className={cn('text-sm text-gray-500 dark:text-gray-400 mt-1', className)}
       {...props}
     />
   ),
@@ -55,7 +55,7 @@ const CardFooter = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn('px-6 py-4 bg-gray-50/50', className)}
+      className={cn('px-6 py-4 bg-gray-50/50 dark:bg-gray-900/50', className)}
       {...props}
     />
   ),

@@ -79,7 +79,7 @@ export function StepAmount({ data, onChange, errors }: StepAmountProps) {
     <div className="space-y-6">
       {/* Preset amount cards */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-3">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
           Select an amount
         </label>
         <div className="grid grid-cols-2 gap-3">
@@ -92,19 +92,19 @@ export function StepAmount({ data, onChange, errors }: StepAmountProps) {
                 onClick={() => selectPreset(preset.amount)}
                 className={`rounded-xl border-2 p-4 text-left transition-all ${
                   isSelected
-                    ? 'border-gold-500 bg-gold-50 shadow-sm'
-                    : 'border-gray-200 hover:border-gray-300 bg-white'
+                    ? 'border-gold-500 bg-gold-50 dark:bg-gold-900/20 shadow-sm'
+                    : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 bg-white dark:bg-gray-800'
                 }`}
               >
                 <span
                   className={`text-xl font-bold ${
-                    isSelected ? 'text-gold-700' : 'text-primary-800'
+                    isSelected ? 'text-gold-700 dark:text-gold-400' : 'text-primary-800 dark:text-primary-200'
                   }`}
                 >
                   {formatCurrency(preset.amount)}
                 </span>
-                <span className="text-sm text-gray-500">{frequencySuffix(data.frequency)}</span>
-                <p className="mt-1 text-xs text-gray-500 leading-relaxed">
+                <span className="text-sm text-gray-500 dark:text-gray-400">{frequencySuffix(data.frequency)}</span>
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
                   {preset.description}
                 </p>
               </button>

@@ -71,7 +71,7 @@ export function MonthPicker({ currentMonth }: MonthPickerProps) {
         </svg>
       </Button>
 
-      <span className="text-base font-semibold text-gray-800 min-w-[160px] text-center">
+      <span className="text-base font-semibold text-gray-800 dark:text-gray-100 min-w-[160px] text-center">
         {formatMonthLabel(currentMonth)}
       </span>
 

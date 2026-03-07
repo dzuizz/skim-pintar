@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase'
 export async function GET() {
   const { data, error } = await supabase
     .from('transparency_config')
-    .select('id, category, percentage, description, sort_order')
+    .select('id, category, percentage, description, sort_order, target')
     .order('sort_order', { ascending: true })
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
@@ -15,9 +15,39 @@ export async function GET() {
     percentage: c.percentage,
     description: c.description,
     sortOrder: c.sort_order,
+    target: Number(c.target) || 0,
   }))
 
   return NextResponse.json(categories)
+}
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const body = await request.json()
+    const updates: { id: number; target: number }[] = body
+
+    if (!Array.isArray(updates)) {
+      return NextResponse.json({ error: 'Expected an array of updates' }, { status: 400 })
+    }
+
+    for (const item of updates) {
+      if (!item.id || typeof item.target !== 'number' || item.target < 0) {
+        return NextResponse.json({ error: 'Each item must have a valid id and non-negative target' }, { status: 400 })
+      }
+      const { error } = await supabase
+        .from('transparency_config')
+        .update({ target: item.target })
+        .eq('id', item.id)
+      if (error) {
+        return NextResponse.json({ error: error.message }, { status: 500 })
+      }
+    }
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('Failed to update targets:', error)
+    return NextResponse.json({ error: 'Failed to update targets' }, { status: 500 })
+  }
 }
 
 export async function PUT(request: NextRequest) {
@@ -29,6 +59,7 @@ export async function PUT(request: NextRequest) {
       percentage: number
       description: string
       sortOrder: number
+      target?: number
     }[] = body
 
     // Validate input
@@ -75,6 +106,7 @@ export async function PUT(request: NextRequest) {
         percentage: cat.percentage,
         description: cat.description.trim(),
         sort_order: cat.sortOrder ?? i,
+        target: cat.target ?? 0,
       })))
       .select()
 
@@ -88,6 +120,7 @@ export async function PUT(request: NextRequest) {
       percentage: c.percentage,
       description: c.description,
       sortOrder: c.sort_order,
+      target: Number(c.target) || 0,
     }))
 
     return NextResponse.json(result)

@@ -40,7 +40,7 @@ function Stepper({ steps, currentStep }: StepperProps) {
                     'flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium transition-colors',
                     isCompleted && 'bg-primary-700 text-white',
                     isActive && 'bg-gold-500 text-white ring-4 ring-gold-100',
-                    isUpcoming && 'bg-gray-200 text-gray-500',
+                    isUpcoming && 'bg-gray-200 text-gray-500 dark:bg-gray-700 dark:text-gray-400',
                   )}
                 >
                   {isCompleted ? (
@@ -54,7 +54,7 @@ function Stepper({ steps, currentStep }: StepperProps) {
                     'mt-2 text-xs font-medium hidden sm:block',
                     isCompleted && 'text-primary-700',
                     isActive && 'text-gold-700',
-                    isUpcoming && 'text-gray-400',
+                    isUpcoming && 'text-gray-400 dark:text-gray-500',
                   )}
                 >
                   {step}
@@ -68,7 +68,7 @@ function Stepper({ steps, currentStep }: StepperProps) {
                     'flex-1 h-0.5 mx-2 sm:mx-3',
                     index < currentStep
                       ? 'bg-primary-700'
-                      : 'border-t-2 border-dashed border-gray-300',
+                      : 'border-t-2 border-dashed border-gray-300 dark:border-gray-600',
                   )}
                 />
               )}

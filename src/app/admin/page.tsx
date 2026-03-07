@@ -6,6 +6,7 @@ import { StatCard } from '@/components/admin/stat-card'
 import { ActivityList, type ActivityItem } from '@/components/admin/activity-list'
 import { MonthlyChart } from '@/components/admin/monthly-chart'
 import { InitiativeProgress } from '@/components/admin/initiative-progress'
+import { AtRiskDonors } from '@/components/admin/at-risk-donors'
 
 function UsersIcon() {
   return (
@@ -51,22 +52,13 @@ function formatMonthShort(cycleMonth: string): string {
   return date.toLocaleDateString('en-SG', { month: 'short' })
 }
 
-// Annual targets for Ar-Raudhah initiatives (SGD)
-const INITIATIVE_TARGETS: Record<string, number> = {
-  'Mosque Operations & Maintenance': 24000,
-  'Religious Education': 18000,
-  'Community Welfare & Assistance': 12000,
-  'Youth Development': 9600,
-  "Da'wah & Outreach": 6000,
-}
-
-const INITIATIVE_COLORS: Record<string, string> = {
-  'Mosque Operations & Maintenance': 'bg-primary-700',
-  'Religious Education': 'bg-gold-500',
-  'Community Welfare & Assistance': 'bg-primary-500',
-  'Youth Development': 'bg-gold-400',
-  "Da'wah & Outreach": 'bg-primary-300',
-}
+const INITIATIVE_COLORS = [
+  'bg-primary-700',
+  'bg-gold-500',
+  'bg-primary-500',
+  'bg-gold-400',
+  'bg-primary-300',
+]
 
 export default async function AdminDashboardPage() {
   const now = new Date()
@@ -145,14 +137,15 @@ export default async function AdminDashboardPage() {
 
   const { data: transparencyConfig } = await supabase
     .from('transparency_config')
-    .select('category, percentage')
+    .select('id, category, percentage, target')
     .order('sort_order')
 
-  const initiatives = (transparencyConfig ?? []).map((cat) => ({
+  const initiatives = (transparencyConfig ?? []).map((cat, i) => ({
+    id: cat.id,
     name: cat.category,
     allocated: (totalReceivedYTD * cat.percentage) / 100,
-    target: INITIATIVE_TARGETS[cat.category] ?? 10000,
-    color: INITIATIVE_COLORS[cat.category] ?? 'bg-primary-500',
+    target: Number(cat.target) || 0,
+    color: INITIATIVE_COLORS[i % INITIATIVE_COLORS.length],
   }))
 
   // --- Recent Activity ---
@@ -187,9 +180,9 @@ export default async function AdminDashboardPage() {
     .slice(0, 10)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 lg:gap-6">
         <StatCard
           icon={<UsersIcon />}
           value={String(activeDonorCount)}
@@ -216,13 +209,16 @@ export default async function AdminDashboardPage() {
         />
       </div>
 
-      {/* Charts Row */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        <MonthlyChart data={monthlyData} />
+      {/* Monthly Chart — full width for breathing room */}
+      <MonthlyChart data={monthlyData} />
+
+      {/* Initiative Funding + At-Risk Donors */}
+      <div className="grid gap-8 lg:grid-cols-2">
         <InitiativeProgress initiatives={initiatives} totalReceived={totalReceivedYTD} />
+        <AtRiskDonors />
       </div>
 
-      {/* Recent Activity */}
+      {/* Recent Activity — full width */}
       <ActivityList items={activityItems} />
     </div>
   )

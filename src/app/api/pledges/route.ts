@@ -133,6 +133,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Fetch current top 3 initiatives by admin priority
+    const { data: topInitiatives } = await supabase
+      .from('transparency_config')
+      .select('id')
+      .order('sort_order', { ascending: true })
+      .limit(3)
+
+    const initiativePriorities = (topInitiatives ?? []).map((i) => i.id)
+
     // Create the pledge
     const { data: pledge, error: pledgeError } = await supabase
       .from('pledges')
@@ -142,6 +151,7 @@ export async function POST(request: NextRequest) {
         frequency: data.frequency,
         reminder_day: data.reminderDay,
         status: 'ACTIVE',
+        initiative_priorities: initiativePriorities,
       })
       .select()
       .single()

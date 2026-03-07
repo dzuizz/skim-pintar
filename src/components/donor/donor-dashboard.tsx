@@ -150,15 +150,15 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
     <div className="space-y-6">
       {/* Welcome */}
       <div>
-        <h2 className="text-xl font-semibold text-primary-800">
+        <h2 className="text-xl font-semibold text-primary-800 dark:text-primary-200">
           Welcome, {donor.name}
         </h2>
-        <p className="text-sm text-gray-500 mt-1">{donor.phone}</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{donor.phone}</p>
       </div>
 
       {/* Success Message */}
       {successMessage && (
-        <div className="rounded-lg border border-green-200 bg-green-50 p-3">
+        <div className="rounded-lg border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20 p-3">
           <p className="text-sm text-green-700">{successMessage}</p>
         </div>
       )}
@@ -177,26 +177,26 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
           <CardContent className="pt-0">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-xs text-gray-500 uppercase tracking-wide">Amount</p>
-                <p className="text-lg font-semibold text-primary-800">
+                <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Amount</p>
+                <p className="text-lg font-semibold text-primary-800 dark:text-primary-200">
                   {formatCurrency(pledge.amount)}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-gray-500 uppercase tracking-wide">Frequency</p>
-                <p className="text-sm font-medium text-gray-900">
+                <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Frequency</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                   {frequencyLabel(pledge.frequency)}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-gray-500 uppercase tracking-wide">Reminder Day</p>
-                <p className="text-sm font-medium text-gray-900">
+                <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Reminder Day</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                   {reminderLabel(pledge.reminderDay, pledge.frequency)}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-gray-500 uppercase tracking-wide">Reminder Via</p>
-                <p className="text-sm font-medium text-gray-900">
+                <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Reminder Via</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                   {channelLabel(donor.reminderChannel)}
                 </p>
               </div>
@@ -243,10 +243,10 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
       {!pledge && (
         <Card>
           <CardContent className="py-8 text-center">
-            <p className="text-gray-500">No pledge found.</p>
+            <p className="text-gray-500 dark:text-gray-400">No pledge found.</p>
             <a
               href="/pledge"
-              className="mt-2 inline-block text-sm font-medium text-primary-700 hover:underline"
+              className="mt-2 inline-block text-sm font-medium text-primary-700 dark:text-primary-400 hover:underline"
             >
               Start a new pledge
             </a>
@@ -259,12 +259,12 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
           <Card className="w-full max-w-sm">
             <CardContent className="py-6">
-              <h3 className="text-lg font-semibold text-gray-900">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                 {confirmAction === 'pause' && 'Pause your pledge?'}
                 {confirmAction === 'cancel' && 'Cancel your pledge?'}
                 {confirmAction === 'resume' && 'Resume your pledge?'}
               </h3>
-              <p className="mt-2 text-sm text-gray-500">
+              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
                 {confirmAction === 'pause' &&
                   'Your pledge will be paused and reminders will stop. You can resume anytime.'}
                 {confirmAction === 'cancel' &&
@@ -313,7 +313,7 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
         </CardHeader>
         <CardContent className="pt-0">
           {donations.length === 0 ? (
-            <p className="text-sm text-gray-500 py-4 text-center">
+            <p className="text-sm text-gray-500 dark:text-gray-400 py-4 text-center">
               No donation records yet.
             </p>
           ) : (
@@ -323,18 +323,18 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
                 {donations.map((donation) => (
                   <div
                     key={donation.id}
-                    className="flex items-center justify-between rounded-lg border border-gray-100 p-3"
+                    className="flex items-center justify-between rounded-lg border border-gray-100 dark:border-gray-700 p-3"
                   >
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-gray-900">
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                         {formatMonth(donation.cycleMonth)}
                       </p>
-                      <p className="mt-0.5 font-mono text-xs text-gray-400">
+                      <p className="mt-0.5 font-mono text-xs text-gray-400 dark:text-gray-500">
                         {donation.reference}
                       </p>
                     </div>
                     <div className="flex items-center gap-3 flex-shrink-0">
-                      <span className="text-sm font-semibold text-gray-900">
+                      <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                         {formatCurrency(donation.amount)}
                       </span>
                       <Badge variant={donationStatusVariant(donation.status)}>
@@ -346,11 +346,11 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
               </div>
 
               {/* Cumulative total */}
-              <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-600">
+              <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
                   Total Donated
                 </span>
-                <span className="text-lg font-bold text-primary-800">
+                <span className="text-lg font-bold text-primary-800 dark:text-primary-200">
                   {formatCurrency(cumulativeTotal)}
                 </span>
               </div>

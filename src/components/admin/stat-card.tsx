@@ -22,8 +22,8 @@ export function StatCard({ icon, value, label, accentClass }: StatCardProps) {
           {icon}
         </div>
         <div className="min-w-0">
-          <p className="truncate text-2xl font-bold text-gray-900">{value}</p>
-          <p className="text-sm text-gray-500">{label}</p>
+          <p className="truncate text-2xl font-bold text-gray-900 dark:text-gray-100">{value}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">{label}</p>
         </div>
       </CardContent>
     </Card>

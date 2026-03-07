@@ -24,14 +24,14 @@ export function PaymentMethods({ amount, reference }: PaymentMethodsProps) {
   return (
     <div className="space-y-4">
       {/* Tab selector */}
-      <div className="flex rounded-lg border border-gray-200 bg-gray-50 p-1">
+      <div className="flex rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-1">
         <button
           type="button"
           onClick={() => setActiveTab('paynow')}
           className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
             activeTab === 'paynow'
-              ? 'bg-white text-primary-800 shadow-sm'
-              : 'text-gray-500 hover:text-gray-700'
+              ? 'bg-white dark:bg-gray-700 text-primary-800 dark:text-primary-200 shadow-sm'
+              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
           }`}
         >
           PayNow QR
@@ -41,8 +41,8 @@ export function PaymentMethods({ amount, reference }: PaymentMethodsProps) {
           onClick={() => setActiveTab('bank-transfer')}
           className={`flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
             activeTab === 'bank-transfer'
-              ? 'bg-white text-primary-800 shadow-sm'
-              : 'text-gray-500 hover:text-gray-700'
+              ? 'bg-white dark:bg-gray-700 text-primary-800 dark:text-primary-200 shadow-sm'
+              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
           }`}
         >
           Bank Transfer
@@ -58,7 +58,7 @@ export function PaymentMethods({ amount, reference }: PaymentMethodsProps) {
       {activeTab === 'bank-transfer' && (
         <Card className="border-primary-100">
           <CardContent className="py-6">
-            <h3 className="text-lg font-semibold text-primary-800 text-center mb-6">
+            <h3 className="text-lg font-semibold text-primary-800 dark:text-primary-200 text-center mb-6">
               Bank Transfer Details
             </h3>
 
@@ -70,8 +70,8 @@ export function PaymentMethods({ amount, reference }: PaymentMethodsProps) {
               <DetailRow label="Reference" value={reference} copyable />
             </div>
 
-            <div className="mt-6 rounded-lg bg-gold-50 border border-gold-200 p-3">
-              <p className="text-sm text-gold-800 leading-relaxed">
+            <div className="mt-6 rounded-lg bg-gold-50 dark:bg-gold-900/20 border border-gold-200 dark:border-gold-800 p-3">
+              <p className="text-sm text-gold-800 dark:text-gold-400 leading-relaxed">
                 Please include the reference code in your transfer remarks so we
                 can match your donation to your pledge.
               </p>
@@ -103,16 +103,16 @@ function DetailRow({
 
   return (
     <div className="flex items-center justify-between gap-4">
-      <span className="text-sm text-gray-500 flex-shrink-0">{label}</span>
+      <span className="text-sm text-gray-500 dark:text-gray-400 flex-shrink-0">{label}</span>
       <div className="flex items-center gap-2">
-        <span className="text-sm font-medium text-gray-900 font-mono">
+        <span className="text-sm font-medium text-gray-900 dark:text-gray-100 font-mono">
           {value}
         </span>
         {copyable && (
           <button
             onClick={handleCopy}
             type="button"
-            className="text-xs px-2 py-0.5 rounded border border-gray-300 text-gray-600 hover:bg-gray-50 transition-colors"
+            className="text-xs px-2 py-0.5 rounded border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           >
             {copied ? 'Copied!' : 'Copy'}
           </button>

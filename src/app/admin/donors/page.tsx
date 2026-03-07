@@ -89,8 +89,8 @@ export default async function AdminDonorsPage({ searchParams }: DonorsPageProps)
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-gray-800">All Donors</h2>
-          <p className="text-sm text-gray-500 mt-1">
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100">All Donors</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
             {totalCount} donor{totalCount !== 1 ? 's' : ''} found
           </p>
         </div>
@@ -105,44 +105,44 @@ export default async function AdminDonorsPage({ searchParams }: DonorsPageProps)
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
-                <tr className="border-b border-gray-100">
-                  <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <tr className="border-b border-gray-100 dark:border-gray-700">
+                  <th className="px-6 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Name
                   </th>
-                  <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Phone
                   </th>
-                  <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Pledge
                   </th>
-                  <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Joined
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50">
+              <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
                 {donors.map((donor) => {
                   const pledge = donor.pledges[0] || null
                   return (
                     <tr
                       key={donor.id}
-                      className="hover:bg-gray-50/50 transition-colors"
+                      className="hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition-colors"
                     >
                       <td className="px-6 py-4">
                         <Link
                           href={`/admin/donors/${donor.id}`}
-                          className="text-sm font-medium text-primary-700 hover:text-primary-800 hover:underline"
+                          className="text-sm font-medium text-primary-700 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 hover:underline"
                         >
                           {donor.name}
                         </Link>
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-600">
+                      <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
                         {donor.phone}
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-800">
+                      <td className="px-6 py-4 text-sm text-gray-800 dark:text-gray-200">
                         {pledge
                           ? `${formatCurrency(pledge.amount)}${frequencyLabel(pledge.frequency)}`
                           : '-'}
@@ -156,7 +156,7 @@ export default async function AdminDonorsPage({ searchParams }: DonorsPageProps)
                           <Badge variant="paused">No Pledge</Badge>
                         )}
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-500">
+                      <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                         {formatDate(donor.created_at)}
                       </td>
                     </tr>
@@ -190,10 +190,10 @@ export default async function AdminDonorsPage({ searchParams }: DonorsPageProps)
                 <CardContent className="py-4">
                   <div className="flex items-start justify-between">
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-primary-700 truncate">
+                      <p className="text-sm font-medium text-primary-700 dark:text-primary-400 truncate">
                         {donor.name}
                       </p>
-                      <p className="text-xs text-gray-500 mt-0.5">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                         {donor.phone}
                       </p>
                     </div>
@@ -205,13 +205,13 @@ export default async function AdminDonorsPage({ searchParams }: DonorsPageProps)
                       <Badge variant="paused">No Pledge</Badge>
                     )}
                   </div>
-                  <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-50">
-                    <span className="text-sm font-medium text-gray-800">
+                  <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-50 dark:border-gray-700">
+                    <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
                       {pledge
                         ? `${formatCurrency(pledge.amount)}${frequencyLabel(pledge.frequency)}`
                         : 'No active pledge'}
                     </span>
-                    <span className="text-xs text-gray-400">
+                    <span className="text-xs text-gray-400 dark:text-gray-500">
                       {formatDate(donor.created_at)}
                     </span>
                   </div>

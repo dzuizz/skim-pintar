@@ -39,6 +39,12 @@ body {
   color: #1a1a1a;
 }
 
+.dark body,
+html.dark body {
+  background-color: #111827;
+  color: #f3f4f6;
+}
+
 .islamic-pattern {
   background-image:
     repeating-linear-gradient(

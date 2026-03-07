@@ -55,7 +55,7 @@ export function QRDisplay({
   return (
     <Card className="border-primary-100">
       <CardContent className="py-6">
-        <h3 className="text-lg font-semibold text-primary-800 text-center mb-6">
+        <h3 className="text-lg font-semibold text-primary-800 dark:text-primary-200 text-center mb-6">
           Pay via PayNow
         </h3>
 
@@ -101,19 +101,19 @@ export function QRDisplay({
         </div>
 
         {/* Amount */}
-        <p className="text-center text-2xl font-bold text-primary-800 mb-4">
+        <p className="text-center text-2xl font-bold text-primary-800 dark:text-primary-200 mb-4">
           {formatCurrency(amount)}
         </p>
 
         {/* Reference */}
         <div className="flex items-center justify-center gap-2 mb-4">
-          <span className="text-sm text-gray-500">Ref:</span>
-          <code className="text-sm font-mono bg-gray-100 px-2 py-1 rounded text-gray-800">
+          <span className="text-sm text-gray-500 dark:text-gray-400">Ref:</span>
+          <code className="text-sm font-mono bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-gray-800 dark:text-gray-200">
             {reference}
           </code>
           <button
             onClick={handleCopyReference}
-            className="text-xs px-2 py-1 rounded border border-gray-300 text-gray-600 hover:bg-gray-50 transition-colors"
+            className="text-xs px-2 py-1 rounded border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             type="button"
           >
             {copied ? 'Copied!' : 'Copy'}
@@ -121,12 +121,12 @@ export function QRDisplay({
         </div>
 
         {/* Recipient */}
-        <p className="text-center text-sm text-gray-500 mb-4">
-          Recipient: <span className="font-medium text-gray-700">{recipientName}</span>
+        <p className="text-center text-sm text-gray-500 dark:text-gray-400 mb-4">
+          Recipient: <span className="font-medium text-gray-700 dark:text-gray-300">{recipientName}</span>
         </p>
 
         {/* Instruction */}
-        <p className="text-center text-sm text-gray-500 leading-relaxed">
+        <p className="text-center text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
           Open your banking app and scan this QR code to complete your donation
         </p>
       </CardContent>

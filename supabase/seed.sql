@@ -1,10 +1,10 @@
 -- Seed transparency config
-INSERT INTO transparency_config (category, percentage, description, sort_order) VALUES
-  ('Mosque Operations & Maintenance', 35, 'Daily upkeep, utilities, and facility maintenance of the mosque', 1),
-  ('Religious Education', 25, 'Madrasah programmes, Quran classes, and Islamic studies', 2),
-  ('Community Welfare & Assistance', 20, 'Financial aid, food distribution, and family support services', 3),
-  ('Youth Development', 10, 'Mentorship programmes, sports, and leadership development for youth', 4),
-  ('Da''wah & Outreach', 10, 'Community events, interfaith dialogues, and public education', 5)
+INSERT INTO transparency_config (category, percentage, description, sort_order, target) VALUES
+  ('Mosque Operations & Maintenance', 35, 'Daily upkeep, utilities, and facility maintenance of the mosque', 1, 24000),
+  ('Religious Education', 25, 'Madrasah programmes, Quran classes, and Islamic studies', 2, 18000),
+  ('Community Welfare & Assistance', 20, 'Financial aid, food distribution, and family support services', 3, 12000),
+  ('Youth Development', 10, 'Mentorship programmes, sports, and leadership development for youth', 4, 9600),
+  ('Da''wah & Outreach', 10, 'Community events, interfaith dialogues, and public education', 5, 6000)
 ON CONFLICT DO NOTHING;
 
 -- Seed admin (password: admin123, bcrypt hash)
@@ -20,10 +20,10 @@ INSERT INTO donors (name, phone, email, reminder_channel) VALUES
 ON CONFLICT (phone) DO NOTHING;
 
 -- Seed pledges (for the 3 donors above)
-INSERT INTO pledges (donor_id, amount, frequency, reminder_day, status) VALUES
-  (1, 50.00, 'MONTHLY', 1, 'ACTIVE'),
-  (2, 100.00, 'MONTHLY', 1, 'ACTIVE'),
-  (3, 30.00, 'MONTHLY', 1, 'ACTIVE')
+INSERT INTO pledges (donor_id, amount, frequency, reminder_day, status, missed_count, grace_deadline, initiative_priorities) VALUES
+  (1, 50.00, 'MONTHLY', 1, 'ACTIVE', 0, NULL, '[1, 2, 3]'),
+  (2, 100.00, 'MONTHLY', 1, 'ACTIVE', 2, NOW() + INTERVAL '30 days', '[2, 3, 4]'),
+  (3, 30.00, 'MONTHLY', 1, 'ACTIVE', 3, NOW() + INTERVAL '12 days', '[1, 2, 3, 4, 5]')
 ON CONFLICT DO NOTHING;
 
 -- Seed sample donations
