@@ -1,0 +1,232 @@
+export const dynamic = 'force-dynamic'
+
+import Link from 'next/link'
+import { prisma } from '@/lib/db'
+import { formatCurrency } from '@/lib/utils'
+import { Badge } from '@/components/ui/badge'
+import { Card, CardContent } from '@/components/ui/card'
+import { DonorFilters } from '@/components/admin/donor-filters'
+
+function formatDate(date: Date): string {
+  return new Date(date).toLocaleDateString('en-SG', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  })
+}
+
+function frequencyLabel(frequency: string): string {
+  switch (frequency) {
+    case 'MONTHLY':
+      return '/month'
+    case 'QUARTERLY':
+      return '/quarter'
+    case 'ANNUAL':
+      return '/year'
+    default:
+      return ''
+  }
+}
+
+type PledgeStatus = 'ACTIVE' | 'PAUSED' | 'CANCELLED'
+
+function statusBadgeVariant(status: string): 'active' | 'paused' | 'cancelled' {
+  switch (status) {
+    case 'ACTIVE':
+      return 'active'
+    case 'PAUSED':
+      return 'paused'
+    case 'CANCELLED':
+      return 'cancelled'
+    default:
+      return 'paused'
+  }
+}
+
+interface DonorsPageProps {
+  searchParams: Promise<{ search?: string; status?: string }>
+}
+
+export default async function AdminDonorsPage({ searchParams }: DonorsPageProps) {
+  const { search, status } = await searchParams
+
+  // Build query filter
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const where: any = {}
+
+  if (search) {
+    where.OR = [
+      { name: { contains: search } },
+      { phone: { contains: search } },
+    ]
+  }
+
+  if (status) {
+    where.pledges = {
+      some: { status },
+    }
+  }
+
+  const donors = await prisma.donor.findMany({
+    where,
+    include: {
+      pledges: {
+        orderBy: { createdAt: 'desc' },
+        take: 1,
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+  })
+
+  const totalCount = donors.length
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-xl font-semibold text-gray-800">All Donors</h2>
+          <p className="text-sm text-gray-500 mt-1">
+            {totalCount} donor{totalCount !== 1 ? 's' : ''} found
+          </p>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <DonorFilters />
+
+      {/* Desktop Table */}
+      <div className="hidden md:block">
+        <Card>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="border-b border-gray-100">
+                  <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Name
+                  </th>
+                  <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Phone
+                  </th>
+                  <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Pledge
+                  </th>
+                  <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Joined
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {donors.map((donor) => {
+                  const pledge = donor.pledges[0] || null
+                  return (
+                    <tr
+                      key={donor.id}
+                      className="hover:bg-gray-50/50 transition-colors"
+                    >
+                      <td className="px-6 py-4">
+                        <Link
+                          href={`/admin/donors/${donor.id}`}
+                          className="text-sm font-medium text-primary-700 hover:text-primary-800 hover:underline"
+                        >
+                          {donor.name}
+                        </Link>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-600">
+                        {donor.phone}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-800">
+                        {pledge
+                          ? `${formatCurrency(pledge.amount)}${frequencyLabel(pledge.frequency)}`
+                          : '-'}
+                      </td>
+                      <td className="px-6 py-4">
+                        {pledge ? (
+                          <Badge variant={statusBadgeVariant(pledge.status as PledgeStatus)}>
+                            {pledge.status}
+                          </Badge>
+                        ) : (
+                          <Badge variant="paused">No Pledge</Badge>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500">
+                        {formatDate(donor.createdAt)}
+                      </td>
+                    </tr>
+                  )
+                })}
+                {donors.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-12 text-center">
+                      <p className="text-sm text-gray-500">No donors found</p>
+                      {search && (
+                        <p className="text-xs text-gray-400 mt-1">
+                          Try adjusting your search or filters
+                        </p>
+                      )}
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      </div>
+
+      {/* Mobile Card List */}
+      <div className="md:hidden space-y-3">
+        {donors.map((donor) => {
+          const pledge = donor.pledges[0] || null
+          return (
+            <Link key={donor.id} href={`/admin/donors/${donor.id}`}>
+              <Card className="hover:shadow-md transition-shadow">
+                <CardContent className="py-4">
+                  <div className="flex items-start justify-between">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-primary-700 truncate">
+                        {donor.name}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        {donor.phone}
+                      </p>
+                    </div>
+                    {pledge ? (
+                      <Badge variant={statusBadgeVariant(pledge.status as PledgeStatus)}>
+                        {pledge.status}
+                      </Badge>
+                    ) : (
+                      <Badge variant="paused">No Pledge</Badge>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-50">
+                    <span className="text-sm font-medium text-gray-800">
+                      {pledge
+                        ? `${formatCurrency(pledge.amount)}${frequencyLabel(pledge.frequency)}`
+                        : 'No active pledge'}
+                    </span>
+                    <span className="text-xs text-gray-400">
+                      {formatDate(donor.createdAt)}
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          )
+        })}
+        {donors.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-sm text-gray-500">No donors found</p>
+            {search && (
+              <p className="text-xs text-gray-400 mt-1">
+                Try adjusting your search or filters
+              </p>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
