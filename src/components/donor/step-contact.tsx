@@ -33,9 +33,13 @@ export function StepContact({ data, onChange, errors, welcomeBack, onPhoneBlur }
   return (
     <div className="space-y-5">
       {welcomeBack && (
-        <div className="rounded-lg border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20 p-3">
-          <p className="text-sm text-green-700 dark:text-green-400">
-            Welcome back, {welcomeBack}! We&apos;ve pre-filled your details.
+        <div className="rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 p-3">
+          <p className="text-sm text-amber-700 dark:text-amber-400">
+            A member with this phone number already exists. Please visit the{' '}
+            <a href="/my" className="font-medium underline hover:text-amber-800 dark:hover:text-amber-300">
+              Member Dashboard
+            </a>{' '}
+            to manage your account.
           </p>
         </div>
       )}

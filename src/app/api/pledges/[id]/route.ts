@@ -17,10 +17,18 @@ export async function PATCH(
     }
 
     const body = await request.json()
-    const { status } = body as { status?: string }
+    const { status, graceDeadline } = body as { status?: string; graceDeadline?: string }
+
+    // Must provide at least one field to update
+    if (!status && !graceDeadline) {
+      return NextResponse.json(
+        { error: 'Must provide status or graceDeadline to update.' },
+        { status: 400 },
+      )
+    }
 
     const validStatuses = ['PAUSED', 'CANCELLED', 'ACTIVE']
-    if (!status || !validStatuses.includes(status)) {
+    if (status && !validStatuses.includes(status)) {
       return NextResponse.json(
         { error: 'Invalid status. Must be PAUSED, CANCELLED, or ACTIVE.' },
         { status: 400 },
@@ -41,10 +49,15 @@ export async function PATCH(
       )
     }
 
-    // Update pledge status
+    // Build update object
+    const updateFields: Record<string, unknown> = {}
+    if (status) updateFields.status = status
+    if (graceDeadline) updateFields.grace_deadline = graceDeadline
+
+    // Update pledge
     const { data: updated, error: updateError } = await supabase
       .from('pledges')
-      .update({ status })
+      .update(updateFields)
       .eq('id', pledgeId)
       .select()
       .single()
@@ -57,6 +70,10 @@ export async function PATCH(
       frequency: updated.frequency,
       reminderDay: updated.reminder_day,
       status: updated.status,
+      tier: updated.tier || 'INDIVIDUAL',
+      paymentMethod: updated.payment_method || 'MANUAL',
+      missedCount: updated.missed_count || 0,
+      graceDeadline: updated.grace_deadline || null,
     })
   } catch (error) {
     console.error('Pledge update error:', error)

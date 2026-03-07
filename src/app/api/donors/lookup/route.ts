@@ -58,13 +58,22 @@ export async function POST(request: NextRequest) {
       .select('category, percentage, description')
       .order('sort_order', { ascending: true })
 
+    // Fetch dependants (table may not exist yet)
+    let dependantsList: Array<{id: number; name: string; relationship: string; nric_last4: string | null}> = []
+    try {
+      const { data: deps } = await supabase.from('dependants').select('*').eq('donor_id', donor.id).order('created_at')
+      dependantsList = (deps ?? []).map(d => ({ id: d.id, name: d.name, relationship: d.relationship, nric_last4: d.nric_last4 }))
+    } catch { /* table may not exist yet */ }
+
     return NextResponse.json({
       donor: {
         id: donor.id,
         name: donor.name,
         phone: donor.phone,
         email: donor.email,
+        address: donor.address || null,
         reminderChannel: donor.reminder_channel,
+        updatedAt: donor.updated_at,
       },
       pledge: pledge
         ? {
@@ -92,6 +101,7 @@ export async function POST(request: NextRequest) {
         percentage: c.percentage,
         description: c.description,
       })),
+      dependants: dependantsList,
     })
   } catch (error) {
     console.error('Donor lookup error:', error)

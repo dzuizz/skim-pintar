@@ -109,8 +109,17 @@ export default async function AdminDonorDetailPage({ params }: DonorDetailPagePr
   const latestPledge = pledges[0] || null
 
   // Find current month's pending donation for QR display
-  const now = new Date()
-  const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+  const { data: latestDon } = await supabase
+    .from('donations')
+    .select('cycle_month')
+    .order('cycle_month', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  const currentMonth = latestDon?.cycle_month ?? (() => {
+    const now = new Date()
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+  })()
   const currentDonation = donations.find(
     (d: { cycle_month: string; status: string }) => d.cycle_month === currentMonth && d.status === 'PENDING',
   )

@@ -11,6 +11,7 @@ CREATE TABLE donors (
   phone TEXT UNIQUE NOT NULL,
   email TEXT,
   nric_last4 TEXT,
+  address TEXT,
   reminder_channel reminder_channel_type NOT NULL DEFAULT 'WHATSAPP',
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -67,6 +68,42 @@ CREATE TABLE transparency_config (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- Dependants
+CREATE TABLE dependants (
+  id SERIAL PRIMARY KEY,
+  donor_id INTEGER NOT NULL REFERENCES donors(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  relationship TEXT NOT NULL,
+  nric_last4 TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX idx_dependants_donor_id ON dependants(donor_id);
+
+-- Audit Log
+CREATE TABLE audit_log (
+  id SERIAL PRIMARY KEY,
+  donor_id INTEGER NOT NULL REFERENCES donors(id),
+  action TEXT NOT NULL,
+  field_name TEXT,
+  old_value TEXT,
+  new_value TEXT,
+  changed_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX idx_audit_log_donor_id ON audit_log(donor_id);
+
+-- Reminder Log
+CREATE TABLE reminder_log (
+  id SERIAL PRIMARY KEY,
+  donor_id INTEGER NOT NULL REFERENCES donors(id),
+  pledge_id INTEGER NOT NULL REFERENCES pledges(id),
+  channel reminder_channel_type NOT NULL,
+  stage INTEGER NOT NULL DEFAULT 1,
+  message TEXT NOT NULL,
+  sent_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX idx_reminder_log_donor_id ON reminder_log(donor_id);
+
 -- Indexes
 CREATE INDEX idx_pledges_donor_id ON pledges(donor_id);
 CREATE INDEX idx_pledges_status ON pledges(status);
@@ -89,3 +126,4 @@ CREATE TRIGGER pledges_updated_at BEFORE UPDATE ON pledges FOR EACH ROW EXECUTE 
 CREATE TRIGGER donations_updated_at BEFORE UPDATE ON donations FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 CREATE TRIGGER admins_updated_at BEFORE UPDATE ON admins FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 CREATE TRIGGER transparency_config_updated_at BEFORE UPDATE ON transparency_config FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+CREATE TRIGGER dependants_updated_at BEFORE UPDATE ON dependants FOR EACH ROW EXECUTE FUNCTION update_updated_at();

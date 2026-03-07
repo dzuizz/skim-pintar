@@ -12,7 +12,9 @@ interface DonorData {
     name: string
     phone: string
     email: string | null
+    address: string | null
     reminderChannel: string
+    updatedAt: string | null
   }
   pledge: {
     id: number
@@ -37,6 +39,12 @@ interface DonorData {
     category: string
     percentage: number
     description: string
+  }[]
+  dependants: {
+    id: number
+    name: string
+    relationship: string
+    nric_last4: string | null
   }[]
 }
 

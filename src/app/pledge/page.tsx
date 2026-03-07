@@ -131,6 +131,9 @@ export default function PledgePage() {
       keys.forEach((k) => delete next[k])
       return next
     })
+    if ('phone' in partial) {
+      setWelcomeBack(null)
+    }
   }
 
   // Welcome-back: check if phone matches existing member
@@ -150,7 +153,7 @@ export default function PledgePage() {
         const data = await res.json()
         if (data.name) {
           setWelcomeBack(data.name)
-          handleChange({ name: data.name, email: data.email || '', nricLast4: data.nricLast4 || '' })
+          // Don't pre-fill - user should go to member dashboard instead
         }
       }
     } catch {
@@ -192,6 +195,10 @@ export default function PledgePage() {
   }
 
   async function handleSubmit() {
+    if (welcomeBack) {
+      setSubmitError('You already have an account. Please visit the Member Dashboard.')
+      return
+    }
     if (!validate()) return
 
     setSubmitting(true)

@@ -6,7 +6,15 @@ import { Card, CardContent } from '@/components/ui/card'
 import { MonthPicker } from '@/components/admin/month-picker'
 import { DonationsTable } from '@/components/admin/donations-table'
 
-function getCurrentMonth(): string {
+async function getSimulatedMonth(): Promise<string> {
+  const { data } = await supabase
+    .from('donations')
+    .select('cycle_month')
+    .order('cycle_month', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  if (data?.cycle_month) return data.cycle_month
   const now = new Date()
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
 }
@@ -19,7 +27,7 @@ export default async function AdminDonationsPage({ searchParams }: PageProps) {
   const params = await searchParams
   const month = params.month && /^\d{4}-\d{2}$/.test(params.month)
     ? params.month
-    : getCurrentMonth()
+    : await getSimulatedMonth()
 
   // Fetch all donations for this cycle month
   const { data: donations } = await supabase

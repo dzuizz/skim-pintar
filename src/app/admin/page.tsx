@@ -61,8 +61,18 @@ const INITIATIVE_COLORS = [
 ]
 
 export default async function AdminDashboardPage() {
-  const now = new Date()
-  const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+  // Determine current month from latest donation data (supports simulation)
+  const { data: latestDonation } = await supabase
+    .from('donations')
+    .select('cycle_month')
+    .order('cycle_month', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  const currentMonth = latestDonation?.cycle_month ?? (() => {
+    const now = new Date()
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+  })()
 
   // --- Stats queries ---
 
@@ -99,9 +109,10 @@ export default async function AdminDashboardPage() {
     .reduce((sum, d) => sum + Number(d.amount), 0)
 
   // --- Monthly trend (last 6 months) ---
+  const [cmYear, cmMon] = currentMonth.split('-').map(Number)
   const months: string[] = []
   for (let i = 5; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+    const d = new Date(cmYear, cmMon - 1 - i, 1)
     months.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`)
   }
 
@@ -125,7 +136,7 @@ export default async function AdminDashboardPage() {
   })
 
   // --- Initiative funding (YTD) ---
-  const yearStart = `${now.getFullYear()}-01`
+  const yearStart = `${currentMonth.split('-')[0]}-01`
   const { data: ytdDonations } = await supabase
     .from('donations')
     .select('amount, status')

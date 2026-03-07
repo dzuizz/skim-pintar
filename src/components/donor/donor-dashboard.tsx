@@ -7,14 +7,17 @@ import { Badge, type BadgeVariant } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { TransparencyPreview } from '@/components/donor/transparency-preview'
 import { PaymentMethods } from '@/components/donor/payment-methods'
+import { ProfileEditor } from '@/components/donor/profile-editor'
+import { DependantsList } from '@/components/donor/dependants-list'
 import { formatCurrency } from '@/lib/utils'
+import { useLocale } from '@/lib/use-locale'
 import type { DonorData } from '@/components/donor/donor-login'
 
 interface DonorDashboardProps {
   data: DonorData
 }
 
-type ConfirmAction = 'pause' | 'cancel' | 'resume' | null
+type ConfirmAction = 'pause' | 'cancel' | 'resume' | 'reactivate' | null
 
 const tierLabels: Record<string, string> = {
   INDIVIDUAL: 'Individual',
@@ -58,19 +61,6 @@ function formatMonth(cycleMonth: string): string {
   return date.toLocaleDateString('en-SG', { month: 'long', year: 'numeric' })
 }
 
-function frequencyLabel(freq: string): string {
-  switch (freq) {
-    case 'MONTHLY':
-      return 'Monthly'
-    case 'QUARTERLY':
-      return 'Quarterly'
-    case 'ANNUAL':
-      return 'Annual'
-    default:
-      return freq
-  }
-}
-
 function channelLabel(channel: string): string {
   switch (channel) {
     case 'WHATSAPP':
@@ -107,6 +97,16 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
   const [confirmAction, setConfirmAction] = useState<ConfirmAction>(null)
   const [updating, setUpdating] = useState(false)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  const t = useLocale()
+
+  function frequencyLabel(freq: string): string {
+    switch (freq) {
+      case 'MONTHLY': return t.dashboard.monthly
+      case 'QUARTERLY': return t.dashboard.quarterly
+      case 'ANNUAL': return t.dashboard.annual
+      default: return freq
+    }
+  }
 
   const { donor, pledge, donations, categories } = data
 
@@ -122,21 +122,26 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
   async function handlePledgeAction(action: ConfirmAction) {
     if (!pledge || !action) return
 
-    const statusMap: Record<string, string> = {
-      pause: 'PAUSED',
-      cancel: 'CANCELLED',
-      resume: 'ACTIVE',
-    }
-
     setUpdating(true)
     setSuccessMessage(null)
 
     try {
-      const res = await fetch(`/api/pledges/${pledge.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: statusMap[action] }),
-      })
+      let res: Response
+
+      if (action === 'reactivate') {
+        res = await fetch(`/api/pledges/${pledge.id}/reactivate`, { method: 'POST' })
+      } else {
+        const statusMap: Record<string, string> = {
+          pause: 'PAUSED',
+          cancel: 'CANCELLED',
+          resume: 'ACTIVE',
+        }
+        res = await fetch(`/api/pledges/${pledge.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: statusMap[action] }),
+        })
+      }
 
       if (!res.ok) {
         const err = await res.json()
@@ -151,9 +156,10 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
       }))
 
       const messages: Record<string, string> = {
-        pause: 'Your pledge has been paused. You can resume anytime.',
-        cancel: 'Your pledge has been cancelled.',
-        resume: 'Your pledge has been resumed. Welcome back!',
+        pause: t.dashboard.pauseSuccess,
+        cancel: t.dashboard.cancelSuccess,
+        resume: t.dashboard.resumeSuccess,
+        reactivate: t.dashboard.reactivateSuccess,
       }
       setSuccessMessage(messages[action])
     } catch (error) {
@@ -170,7 +176,7 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
       {/* Welcome */}
       <div>
         <h2 className="text-xl font-semibold text-primary-800 dark:text-primary-200">
-          Welcome, {donor.name}
+          {t.dashboard.welcome} {donor.name}
         </h2>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{donor.phone}</p>
       </div>
@@ -189,43 +195,61 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
             <svg className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
             </svg>
-            <div>
+            <div className="flex-1">
               <h3 className="text-sm font-semibold text-amber-800 dark:text-amber-300">
-                Payment Overdue
+                {t.dashboard.paymentOverdue}
               </h3>
               <p className="text-sm text-amber-700 dark:text-amber-400 mt-1">
-                You have missed {pledge.missedCount} payment{pledge.missedCount > 1 ? 's' : ''}.
-                {pledge.graceDeadline && (
-                  <> Your account will be suspended after{' '}
-                    <span className="font-semibold">
-                      {new Date(pledge.graceDeadline).toLocaleDateString('en-SG', { day: 'numeric', month: 'long', year: 'numeric' })}
-                    </span>
-                    {' '}if payment is not received.
-                  </>
-                )}
+                {t.dashboard.missedPayments.replace('{count}', String(pledge.missedCount))}
+                {pledge.graceDeadline && (() => {
+                  const daysLeft = Math.ceil((new Date(pledge.graceDeadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+                  return daysLeft > 0 ? (
+                    <> {t.dashboard.daysLeft.replace('{days}', String(daysLeft))}</>
+                  ) : (
+                    <> {t.dashboard.graceExpired}</>
+                  )
+                })()}
               </p>
-              <p className="text-xs text-amber-600 dark:text-amber-500 mt-2">
-                Please make your payment to keep your account active.
-              </p>
+              {pendingDonation && (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  className="mt-3"
+                  onClick={() => document.getElementById('payment-section')?.scrollIntoView({ behavior: 'smooth' })}
+                >
+                  {t.dashboard.payNow}
+                </Button>
+              )}
             </div>
           </div>
         </div>
       )}
 
-      {/* Suspended Notice */}
-      {pledge && pledge.status === 'PAUSED' && pledge.missedCount > 0 && (
+      {/* Suspended / Cancelled Notice with Reactivation */}
+      {pledge && (pledge.status === 'PAUSED' || pledge.status === 'CANCELLED') && (
         <div className="rounded-lg border border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/20 p-4">
           <div className="flex gap-3">
             <svg className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
             </svg>
-            <div>
+            <div className="flex-1">
               <h3 className="text-sm font-semibold text-red-800 dark:text-red-300">
-                Account Suspended
+                {pledge.status === 'CANCELLED' ? t.dashboard.membershipCancelled : t.dashboard.accountSuspended}
               </h3>
               <p className="text-sm text-red-700 dark:text-red-400 mt-1">
-                Your account has been suspended due to missed payments. Please contact the mosque or resume your pledge to reactivate.
+                {pledge.status === 'CANCELLED'
+                  ? t.dashboard.cancelledDesc
+                  : t.dashboard.suspendedDesc}
               </p>
+              <Button
+                variant="primary"
+                size="sm"
+                className="mt-3"
+                onClick={() => setConfirmAction('reactivate')}
+                disabled={updating}
+              >
+                {t.dashboard.reactivate}
+              </Button>
             </div>
           </div>
         </div>
@@ -236,7 +260,7 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle>Your Pledge</CardTitle>
+              <CardTitle>{t.dashboard.yourPledge}</CardTitle>
               <Badge variant={pledgeStatusVariant(pledge.status)}>
                 {pledge.status}
               </Badge>
@@ -245,33 +269,33 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
           <CardContent className="pt-0">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Tier</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t.dashboard.tier}</p>
                 <p className="text-lg font-semibold text-primary-800 dark:text-primary-200">
                   {tierLabels[pledge.tier] || pledge.tier}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Amount</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t.dashboard.amount}</p>
                 <p className="text-lg font-semibold text-primary-800 dark:text-primary-200">
                   {formatCurrency(pledge.amount)}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Frequency</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t.dashboard.frequency}</p>
                 <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                   {frequencyLabel(pledge.frequency)}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Reminder</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t.dashboard.reminder}</p>
                 <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                   {reminderLabel(pledge.reminderDay, pledge.frequency)}
                 </p>
               </div>
               <div className="col-span-2">
-                <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Payment</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t.dashboard.payment}</p>
                 <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                  {pledge.paymentMethod === 'EGIRO' ? 'eGIRO (Auto-Debit)' : 'PayNow / Bank Transfer'}
+                  {pledge.paymentMethod === 'EGIRO' ? t.dashboard.egiroPayment : t.dashboard.manualPayment}
                 </p>
               </div>
             </div>
@@ -279,7 +303,7 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
             {/* Tier benefits */}
             {tierBenefits[pledge.tier] && (
               <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
-                <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Your Benefits</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">{t.dashboard.yourBenefits}</p>
                 <ul className="space-y-1.5">
                   {tierBenefits[pledge.tier].map((benefit) => (
                     <li key={benefit} className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
@@ -303,7 +327,7 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
                     onClick={() => setConfirmAction('pause')}
                     disabled={updating}
                   >
-                    Pause Pledge
+                    {t.dashboard.pausePledge}
                   </Button>
                   <Button
                     variant="ghost"
@@ -312,7 +336,7 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
                     onClick={() => setConfirmAction('cancel')}
                     disabled={updating}
                   >
-                    Cancel Pledge
+                    {t.dashboard.cancelPledge}
                   </Button>
                 </>
               )}
@@ -323,7 +347,7 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
                   onClick={() => setConfirmAction('resume')}
                   disabled={updating}
                 >
-                  Resume Pledge
+                  {t.dashboard.resumePledge}
                 </Button>
               )}
             </div>
@@ -334,15 +358,37 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
       {!pledge && (
         <Card>
           <CardContent className="py-8 text-center">
-            <p className="text-gray-500 dark:text-gray-400">No active pledge found.</p>
+            <p className="text-gray-500 dark:text-gray-400">{t.dashboard.noPledge}</p>
             <Link
               href="/pledge"
               className="mt-2 inline-block text-sm font-medium text-primary-700 dark:text-primary-400 hover:underline"
             >
-              Start Donating
+              {t.dashboard.startDonating}
             </Link>
           </CardContent>
         </Card>
+      )}
+
+      {/* Profile Editor */}
+      <ProfileEditor
+        donor={{
+          id: donor.id,
+          name: donor.name,
+          email: donor.email,
+          address: donor.address,
+          reminderChannel: donor.reminderChannel,
+        }}
+        onUpdate={(updated) => {
+          setData((prev) => ({
+            ...prev,
+            donor: { ...prev.donor, ...updated },
+          }))
+        }}
+      />
+
+      {/* Dependants */}
+      {pledge && (
+        <DependantsList donorId={donor.id} tier={pledge.tier} />
       )}
 
       {/* Confirmation Dialog */}
@@ -351,17 +397,16 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
           <Card className="w-full max-w-sm">
             <CardContent className="py-6">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                {confirmAction === 'pause' && 'Pause your pledge?'}
-                {confirmAction === 'cancel' && 'Cancel your pledge?'}
-                {confirmAction === 'resume' && 'Resume your pledge?'}
+                {confirmAction === 'pause' && t.dashboard.pauseConfirm}
+                {confirmAction === 'cancel' && t.dashboard.cancelConfirm}
+                {confirmAction === 'resume' && t.dashboard.resumeConfirm}
+                {confirmAction === 'reactivate' && t.dashboard.reactivateConfirm}
               </h3>
               <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                {confirmAction === 'pause' &&
-                  'Your pledge will be paused and reminders will stop. You can resume anytime.'}
-                {confirmAction === 'cancel' &&
-                  'This action is permanent. Your pledge will be cancelled. You can always start a new one later.'}
-                {confirmAction === 'resume' &&
-                  'Your pledge will be reactivated and reminders will resume.'}
+                {confirmAction === 'pause' && t.dashboard.pauseDesc}
+                {confirmAction === 'cancel' && t.dashboard.cancelDesc}
+                {confirmAction === 'resume' && t.dashboard.resumeDesc}
+                {confirmAction === 'reactivate' && t.dashboard.reactivateDesc}
               </p>
               <div className="mt-6 flex gap-3 justify-end">
                 <Button
@@ -370,7 +415,7 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
                   onClick={() => setConfirmAction(null)}
                   disabled={updating}
                 >
-                  Go Back
+                  {t.dashboard.goBack}
                 </Button>
                 <Button
                   variant="primary"
@@ -384,12 +429,14 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
                   disabled={updating}
                 >
                   {updating
-                    ? 'Updating...'
+                    ? t.dashboard.updating
                     : confirmAction === 'pause'
-                      ? 'Yes, Pause'
+                      ? t.dashboard.yesPause
                       : confirmAction === 'cancel'
-                        ? 'Yes, Cancel'
-                        : 'Yes, Resume'}
+                        ? t.dashboard.yesCancel
+                        : confirmAction === 'reactivate'
+                          ? t.dashboard.yesReactivate
+                          : t.dashboard.yesResume}
                 </Button>
               </div>
             </CardContent>
@@ -401,7 +448,7 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
       {pledge && receivedCount > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Your Impact</CardTitle>
+            <CardTitle>{t.dashboard.yourImpact}</CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
             <div className="grid grid-cols-2 gap-4">
@@ -409,13 +456,13 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
                 <p className="text-2xl font-bold text-primary-800 dark:text-primary-200">
                   {formatCurrency(cumulativeTotal)}
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Total Contributed</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{t.dashboard.totalContributed}</p>
               </div>
               <div className="text-center p-3 rounded-lg bg-gold-50 dark:bg-gold-900/20">
                 <p className="text-2xl font-bold text-gold-700 dark:text-gold-400">
                   {receivedCount}
                 </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Months Active</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{t.dashboard.monthsActive}</p>
               </div>
             </div>
           </CardContent>
@@ -424,9 +471,9 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
 
       {/* C. PayNow QR for next pending payment (manual only) */}
       {pledge && pledge.status === 'ACTIVE' && pendingDonation && pledge.paymentMethod !== 'EGIRO' && (
-        <Card>
+        <Card id="payment-section">
           <CardHeader>
-            <CardTitle>Next Payment Due</CardTitle>
+            <CardTitle>{t.dashboard.nextPayment}</CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
@@ -441,7 +488,7 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
       {pledge && pledge.status === 'ACTIVE' && pledge.paymentMethod === 'EGIRO' && pendingDonation && (
         <Card>
           <CardHeader>
-            <CardTitle>eGIRO Auto-Debit</CardTitle>
+            <CardTitle>{t.dashboard.egiroAutoDebit}</CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
             <div className="flex items-center gap-3 rounded-lg bg-primary-50 dark:bg-primary-900/20 p-4">
@@ -453,7 +500,7 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
                   {formatMonth(pendingDonation.cycleMonth)} — {formatCurrency(pendingDonation.amount)}
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                  Your bank will auto-debit this amount. No action needed.
+                  {t.dashboard.egiroDesc}
                 </p>
               </div>
             </div>
@@ -464,12 +511,12 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
       {/* D. Contribution History */}
       <Card>
         <CardHeader>
-          <CardTitle>Contribution History</CardTitle>
+          <CardTitle>{t.dashboard.contributionHistory}</CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
           {donations.length === 0 ? (
             <p className="text-sm text-gray-500 dark:text-gray-400 py-4 text-center">
-              No contribution records yet.
+              {t.dashboard.noRecords}
             </p>
           ) : (
             <>
@@ -502,7 +549,7 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
               {/* Cumulative total */}
               <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
                 <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                  Total Contributed
+                  {t.dashboard.totalContributed}
                 </span>
                 <span className="text-lg font-bold text-primary-800 dark:text-primary-200">
                   {formatCurrency(cumulativeTotal)}
@@ -517,10 +564,10 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
       <Card>
         <CardContent className="py-6 text-center">
           <h3 className="text-base font-semibold text-primary-800 dark:text-primary-200">
-            Know someone who&apos;d like to donate?
+            {t.dashboard.shareTitle}
           </h3>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Share Skim Pintar with friends and family
+            {t.dashboard.shareDesc}
           </p>
           <Button
             variant="outline"
@@ -535,7 +582,7 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
               }
             }}
           >
-            Share Donation Link
+            {t.dashboard.shareLink}
           </Button>
         </CardContent>
       </Card>
