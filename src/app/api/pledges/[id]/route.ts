@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
+import { supabase } from '@/lib/supabase'
 
 export async function PATCH(
   request: NextRequest,
@@ -28,11 +28,13 @@ export async function PATCH(
     }
 
     // Validate the pledge exists
-    const existing = await prisma.pledge.findUnique({
-      where: { id: pledgeId },
-    })
+    const { data: existing, error: findError } = await supabase
+      .from('pledges')
+      .select('id')
+      .eq('id', pledgeId)
+      .single()
 
-    if (!existing) {
+    if (findError || !existing) {
       return NextResponse.json(
         { error: 'Pledge not found' },
         { status: 404 },
@@ -40,16 +42,20 @@ export async function PATCH(
     }
 
     // Update pledge status
-    const updated = await prisma.pledge.update({
-      where: { id: pledgeId },
-      data: { status },
-    })
+    const { data: updated, error: updateError } = await supabase
+      .from('pledges')
+      .update({ status })
+      .eq('id', pledgeId)
+      .select()
+      .single()
+
+    if (updateError) throw updateError
 
     return NextResponse.json({
       id: updated.id,
       amount: updated.amount,
       frequency: updated.frequency,
-      reminderDay: updated.reminderDay,
+      reminderDay: updated.reminder_day,
       status: updated.status,
     })
   } catch (error) {

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
+import { supabase } from '@/lib/supabase'
 import { generateReference } from '@/lib/paynow-qr'
 
 interface PledgeRequestBody {
@@ -76,31 +76,55 @@ export async function POST(request: NextRequest) {
 
     const phone = normalizePhone(data.phone)
 
-    // Upsert donor by phone number
-    const donor = await prisma.donor.upsert({
-      where: { phone },
-      update: {
-        name: data.name.trim(),
-        email: data.email?.trim() || null,
-        nricLast4: data.nricLast4?.trim() || null,
-        reminderChannel: data.reminderChannel,
-      },
-      create: {
-        name: data.name.trim(),
-        phone,
-        email: data.email?.trim() || null,
-        nricLast4: data.nricLast4?.trim() || null,
-        reminderChannel: data.reminderChannel,
-      },
-    })
+    // Try to find existing donor by phone
+    const { data: existingDonor } = await supabase
+      .from('donors')
+      .select('*')
+      .eq('phone', phone)
+      .maybeSingle()
+
+    let donor
+    if (existingDonor) {
+      // Update existing donor
+      const { data: updated, error } = await supabase
+        .from('donors')
+        .update({
+          name: data.name.trim(),
+          email: data.email?.trim() || null,
+          nric_last4: data.nricLast4?.trim() || null,
+          reminder_channel: data.reminderChannel,
+        })
+        .eq('id', existingDonor.id)
+        .select()
+        .single()
+
+      if (error) throw error
+      donor = updated
+    } else {
+      // Create new donor
+      const { data: created, error } = await supabase
+        .from('donors')
+        .insert({
+          name: data.name.trim(),
+          phone,
+          email: data.email?.trim() || null,
+          nric_last4: data.nricLast4?.trim() || null,
+          reminder_channel: data.reminderChannel,
+        })
+        .select()
+        .single()
+
+      if (error) throw error
+      donor = created
+    }
 
     // Check for existing active pledge
-    const existingPledge = await prisma.pledge.findFirst({
-      where: {
-        donorId: donor.id,
-        status: 'ACTIVE',
-      },
-    })
+    const { data: existingPledge } = await supabase
+      .from('pledges')
+      .select('id')
+      .eq('donor_id', donor.id)
+      .eq('status', 'ACTIVE')
+      .maybeSingle()
 
     if (existingPledge) {
       return NextResponse.json(
@@ -110,15 +134,19 @@ export async function POST(request: NextRequest) {
     }
 
     // Create the pledge
-    const pledge = await prisma.pledge.create({
-      data: {
-        donorId: donor.id,
+    const { data: pledge, error: pledgeError } = await supabase
+      .from('pledges')
+      .insert({
+        donor_id: donor.id,
         amount: data.amount,
         frequency: data.frequency,
-        reminderDay: data.reminderDay,
+        reminder_day: data.reminderDay,
         status: 'ACTIVE',
-      },
-    })
+      })
+      .select()
+      .single()
+
+    if (pledgeError) throw pledgeError
 
     // Generate current cycle month (YYYY-MM)
     const now = new Date()
@@ -128,16 +156,18 @@ export async function POST(request: NextRequest) {
     const reference = generateReference(donor.id, cycleMonth)
 
     // Create first donation record
-    await prisma.donation.create({
-      data: {
-        pledgeId: pledge.id,
-        donorId: donor.id,
+    const { error: donationError } = await supabase
+      .from('donations')
+      .insert({
+        pledge_id: pledge.id,
+        donor_id: donor.id,
         amount: data.amount,
         reference,
-        cycleMonth,
+        cycle_month: cycleMonth,
         status: 'PENDING',
-      },
-    })
+      })
+
+    if (donationError) throw donationError
 
     return NextResponse.json({
       donorId: donor.id,
