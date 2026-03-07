@@ -4,10 +4,11 @@ export interface ActivityItem {
   id: string
   type: 'pledge' | 'donation'
   description: string
-  time: Date
+  time: Date | string
 }
 
-function relativeTime(date: Date): string {
+function relativeTime(input: Date | string): string {
+  const date = typeof input === 'string' ? new Date(input) : input
   const now = new Date()
   const diffMs = now.getTime() - date.getTime()
   const diffSec = Math.floor(diffMs / 1000)
@@ -86,7 +87,7 @@ export function ActivityList({ items }: ActivityListProps) {
                 <div className="min-w-0 flex-1">
                   <p className="text-sm text-gray-700">{item.description}</p>
                   <p className="mt-0.5 text-xs text-gray-400">
-                    {relativeTime(item.time)}
+                    {relativeTime(item.time as Date | string)}
                   </p>
                 </div>
               </li>
