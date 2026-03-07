@@ -1,10 +1,12 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge, type BadgeVariant } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { TransparencyPreview } from '@/components/donor/transparency-preview'
+import { PaymentMethods } from '@/components/donor/payment-methods'
 import { formatCurrency } from '@/lib/utils'
 import type { DonorData } from '@/components/donor/donor-login'
 
@@ -13,6 +15,18 @@ interface DonorDashboardProps {
 }
 
 type ConfirmAction = 'pause' | 'cancel' | 'resume' | null
+
+const tierLabels: Record<string, string> = {
+  INDIVIDUAL: 'Individual',
+  FAMILY: 'Family',
+  CUSTOM: 'Custom',
+}
+
+const tierBenefits: Record<string, string[]> = {
+  INDIVIDUAL: ['Community donor benefits', 'Funeral coverage (Khidmat Jenazah)', '20% course discount'],
+  FAMILY: ['Family funeral coverage', '50% course discount', 'All Individual benefits'],
+  CUSTOM: ['All Individual benefits', 'Flexible donation amount'],
+}
 
 function pledgeStatusVariant(status: string): BadgeVariant {
   switch (status) {
@@ -100,6 +114,11 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
     .filter((d) => d.status === 'RECEIVED')
     .reduce((sum, d) => sum + d.amount, 0)
 
+  const receivedCount = donations.filter((d) => d.status === 'RECEIVED').length
+
+  // Find the next pending donation for PayNow QR
+  const pendingDonation = donations.find((d) => d.status === 'PENDING')
+
   async function handlePledgeAction(action: ConfirmAction) {
     if (!pledge || !action) return
 
@@ -121,7 +140,7 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
 
       if (!res.ok) {
         const err = await res.json()
-        throw new Error(err.error || 'Failed to update pledge')
+        throw new Error(err.error || 'Failed to update')
       }
 
       const updatedPledge = await res.json()
@@ -163,7 +182,56 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
         </div>
       )}
 
-      {/* A. Pledge Card */}
+      {/* At-Risk Warning */}
+      {pledge && pledge.status === 'ACTIVE' && pledge.missedCount > 0 && (
+        <div className="rounded-lg border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 p-4">
+          <div className="flex gap-3">
+            <svg className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+            </svg>
+            <div>
+              <h3 className="text-sm font-semibold text-amber-800 dark:text-amber-300">
+                Payment Overdue
+              </h3>
+              <p className="text-sm text-amber-700 dark:text-amber-400 mt-1">
+                You have missed {pledge.missedCount} payment{pledge.missedCount > 1 ? 's' : ''}.
+                {pledge.graceDeadline && (
+                  <> Your account will be suspended after{' '}
+                    <span className="font-semibold">
+                      {new Date(pledge.graceDeadline).toLocaleDateString('en-SG', { day: 'numeric', month: 'long', year: 'numeric' })}
+                    </span>
+                    {' '}if payment is not received.
+                  </>
+                )}
+              </p>
+              <p className="text-xs text-amber-600 dark:text-amber-500 mt-2">
+                Please make your payment to keep your account active.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Suspended Notice */}
+      {pledge && pledge.status === 'PAUSED' && pledge.missedCount > 0 && (
+        <div className="rounded-lg border border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/20 p-4">
+          <div className="flex gap-3">
+            <svg className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+            </svg>
+            <div>
+              <h3 className="text-sm font-semibold text-red-800 dark:text-red-300">
+                Account Suspended
+              </h3>
+              <p className="text-sm text-red-700 dark:text-red-400 mt-1">
+                Your account has been suspended due to missed payments. Please contact the mosque or resume your pledge to reactivate.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* A. Membership Card */}
       {pledge && (
         <Card>
           <CardHeader>
@@ -177,6 +245,12 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
           <CardContent className="pt-0">
             <div className="grid grid-cols-2 gap-4">
               <div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Tier</p>
+                <p className="text-lg font-semibold text-primary-800 dark:text-primary-200">
+                  {tierLabels[pledge.tier] || pledge.tier}
+                </p>
+              </div>
+              <div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Amount</p>
                 <p className="text-lg font-semibold text-primary-800 dark:text-primary-200">
                   {formatCurrency(pledge.amount)}
@@ -189,18 +263,35 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
                 </p>
               </div>
               <div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Reminder Day</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Reminder</p>
                 <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                   {reminderLabel(pledge.reminderDay, pledge.frequency)}
                 </p>
               </div>
-              <div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Reminder Via</p>
+              <div className="col-span-2">
+                <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Payment</p>
                 <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                  {channelLabel(donor.reminderChannel)}
+                  {pledge.paymentMethod === 'EGIRO' ? 'eGIRO (Auto-Debit)' : 'PayNow / Bank Transfer'}
                 </p>
               </div>
             </div>
+
+            {/* Tier benefits */}
+            {tierBenefits[pledge.tier] && (
+              <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+                <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Your Benefits</p>
+                <ul className="space-y-1.5">
+                  {tierBenefits[pledge.tier].map((benefit) => (
+                    <li key={benefit} className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                      <svg className="h-4 w-4 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                      </svg>
+                      {benefit}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             {/* Action Buttons */}
             <div className="mt-6 flex flex-wrap gap-3">
@@ -243,13 +334,13 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
       {!pledge && (
         <Card>
           <CardContent className="py-8 text-center">
-            <p className="text-gray-500 dark:text-gray-400">No pledge found.</p>
-            <a
+            <p className="text-gray-500 dark:text-gray-400">No active pledge found.</p>
+            <Link
               href="/pledge"
               className="mt-2 inline-block text-sm font-medium text-primary-700 dark:text-primary-400 hover:underline"
             >
-              Start a new pledge
-            </a>
+              Start Donating
+            </Link>
           </CardContent>
         </Card>
       )}
@@ -268,7 +359,7 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
                 {confirmAction === 'pause' &&
                   'Your pledge will be paused and reminders will stop. You can resume anytime.'}
                 {confirmAction === 'cancel' &&
-                  'This action is permanent. Your pledge will be cancelled and cannot be undone. You can always start a new pledge later.'}
+                  'This action is permanent. Your pledge will be cancelled. You can always start a new one later.'}
                 {confirmAction === 'resume' &&
                   'Your pledge will be reactivated and reminders will resume.'}
               </p>
@@ -282,7 +373,7 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
                   Go Back
                 </Button>
                 <Button
-                  variant={confirmAction === 'cancel' ? 'primary' : 'primary'}
+                  variant="primary"
                   size="sm"
                   className={
                     confirmAction === 'cancel'
@@ -306,19 +397,82 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
         </div>
       )}
 
-      {/* B. Giving History */}
+      {/* B. Impact Stats */}
+      {pledge && receivedCount > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Your Impact</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="text-center p-3 rounded-lg bg-primary-50 dark:bg-primary-900/20">
+                <p className="text-2xl font-bold text-primary-800 dark:text-primary-200">
+                  {formatCurrency(cumulativeTotal)}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Total Contributed</p>
+              </div>
+              <div className="text-center p-3 rounded-lg bg-gold-50 dark:bg-gold-900/20">
+                <p className="text-2xl font-bold text-gold-700 dark:text-gold-400">
+                  {receivedCount}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Months Active</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* C. PayNow QR for next pending payment (manual only) */}
+      {pledge && pledge.status === 'ACTIVE' && pendingDonation && pledge.paymentMethod !== 'EGIRO' && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Next Payment Due</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+              {formatMonth(pendingDonation.cycleMonth)} — {formatCurrency(pendingDonation.amount)}
+            </p>
+            <PaymentMethods amount={pendingDonation.amount} reference={pendingDonation.reference} />
+          </CardContent>
+        </Card>
+      )}
+
+      {/* C2. eGIRO status */}
+      {pledge && pledge.status === 'ACTIVE' && pledge.paymentMethod === 'EGIRO' && pendingDonation && (
+        <Card>
+          <CardHeader>
+            <CardTitle>eGIRO Auto-Debit</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="flex items-center gap-3 rounded-lg bg-primary-50 dark:bg-primary-900/20 p-4">
+              <svg className="h-8 w-8 text-primary-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div>
+                <p className="text-sm font-medium text-primary-800 dark:text-primary-200">
+                  {formatMonth(pendingDonation.cycleMonth)} — {formatCurrency(pendingDonation.amount)}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                  Your bank will auto-debit this amount. No action needed.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* D. Contribution History */}
       <Card>
         <CardHeader>
-          <CardTitle>Giving History</CardTitle>
+          <CardTitle>Contribution History</CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
           {donations.length === 0 ? (
             <p className="text-sm text-gray-500 dark:text-gray-400 py-4 text-center">
-              No donation records yet.
+              No contribution records yet.
             </p>
           ) : (
             <>
-              {/* Mobile-friendly card list */}
               <div className="space-y-3">
                 {donations.map((donation) => (
                   <div
@@ -348,7 +502,7 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
               {/* Cumulative total */}
               <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
                 <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                  Total Donated
+                  Total Contributed
                 </span>
                 <span className="text-lg font-bold text-primary-800 dark:text-primary-200">
                   {formatCurrency(cumulativeTotal)}
@@ -359,7 +513,34 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
         </CardContent>
       </Card>
 
-      {/* C. Transparency Preview */}
+      {/* E. Share / Invite */}
+      <Card>
+        <CardContent className="py-6 text-center">
+          <h3 className="text-base font-semibold text-primary-800 dark:text-primary-200">
+            Know someone who&apos;d like to donate?
+          </h3>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            Share Skim Pintar with friends and family
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            className="mt-4"
+            onClick={() => {
+              const url = `${window.location.origin}/pledge`
+              if (navigator.share) {
+                navigator.share({ title: 'Skim Pintar — Masjid Ar-Raudhah', url })
+              } else {
+                navigator.clipboard.writeText(url)
+              }
+            }}
+          >
+            Share Donation Link
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* F. Transparency Preview */}
       {pledge && categories.length > 0 && (
         <TransparencyPreview amount={pledge.amount} categories={categories} />
       )}

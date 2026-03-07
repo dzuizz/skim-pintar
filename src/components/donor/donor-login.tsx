@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { useLocale } from '@/lib/use-locale'
 
 interface DonorData {
   donor: {
@@ -19,6 +20,10 @@ interface DonorData {
     frequency: string
     reminderDay: number
     status: string
+    tier: string
+    paymentMethod: string
+    missedCount: number
+    graceDeadline: string | null
   } | null
   donations: {
     id: number
@@ -42,8 +47,8 @@ interface DonorLoginProps {
 export type { DonorData }
 
 export function DonorLogin({ onLogin }: DonorLoginProps) {
+  const t = useLocale()
   const [phone, setPhone] = useState('')
-  const [name, setName] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -51,8 +56,8 @@ export function DonorLogin({ onLogin }: DonorLoginProps) {
     e.preventDefault()
     setError(null)
 
-    if (!phone.trim() || !name.trim()) {
-      setError('Please enter both your phone number and name.')
+    if (!phone.trim()) {
+      setError('Please enter your phone number.')
       return
     }
 
@@ -62,7 +67,7 @@ export function DonorLogin({ onLogin }: DonorLoginProps) {
       const res = await fetch('/api/donors/lookup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: phone.trim(), name: name.trim() }),
+        body: JSON.stringify({ phone: phone.trim() }),
       })
 
       const data = await res.json()
@@ -86,10 +91,10 @@ export function DonorLogin({ onLogin }: DonorLoginProps) {
         <CardContent className="py-8">
           <div className="text-center mb-6">
             <h2 className="text-xl font-semibold text-primary-800 dark:text-primary-200">
-              Access Your Dashboard
+              {t.donor.dashboardTitle}
             </h2>
             <p className="mt-2 text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
-              Enter the phone number and name you used when setting up your pledge
+              {t.donor.loginSubtitle}
             </p>
           </div>
 
@@ -101,15 +106,6 @@ export function DonorLogin({ onLogin }: DonorLoginProps) {
               helperText="Singapore mobile number (8 digits)"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              disabled={loading}
-            />
-
-            <Input
-              label="Full Name"
-              type="text"
-              placeholder="As registered in your pledge"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
               disabled={loading}
             />
 
@@ -126,7 +122,7 @@ export function DonorLogin({ onLogin }: DonorLoginProps) {
               className="w-full"
               disabled={loading}
             >
-              {loading ? 'Looking up...' : 'View My Dashboard'}
+              {loading ? t.donor.lookingUp : t.donor.viewDashboard}
             </Button>
           </form>
         </CardContent>

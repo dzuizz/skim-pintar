@@ -23,6 +23,32 @@ if (!supabaseUrl || !supabaseKey) {
 
 const supabase = createClient(supabaseUrl, supabaseKey)
 
+// Insert rows into a table. Fails clearly if columns are missing.
+async function insertRows(client, table, rows, selectCols) {
+  const { data, error } = await client
+    .from(table)
+    .insert(rows)
+    .select(selectCols)
+
+  if (error) {
+    const isMissingCol = error.code === 'PGRST204' || error.code === '42703'
+    if (isMissingCol) {
+      console.error(`\n  ERROR: Missing column in '${table}': ${error.message}`)
+      console.error(`\n  Run the migration SQL in your Supabase SQL Editor:`)
+      console.error(`    ALTER TABLE pledges ADD COLUMN IF NOT EXISTS tier TEXT NOT NULL DEFAULT 'INDIVIDUAL';`)
+      console.error(`    ALTER TABLE pledges ADD COLUMN IF NOT EXISTS payment_method TEXT NOT NULL DEFAULT 'MANUAL';`)
+      console.error(`    ALTER TABLE pledges ADD COLUMN IF NOT EXISTS missed_count INTEGER NOT NULL DEFAULT 0;`)
+      console.error(`    ALTER TABLE pledges ADD COLUMN IF NOT EXISTS grace_deadline TIMESTAMPTZ;`)
+      console.error(`    ALTER TABLE transparency_config ADD COLUMN IF NOT EXISTS target NUMERIC(10,2) NOT NULL DEFAULT 0;`)
+      console.error()
+    } else {
+      console.error(`  Insert into ${table} failed:`, error)
+    }
+    return null
+  }
+  return data
+}
+
 async function reset() {
   console.log('Resetting database...\n')
 
@@ -39,24 +65,26 @@ async function reset() {
   console.log('  Clearing transparency config...')
   await supabase.from('transparency_config').delete().neq('id', 0)
 
-  // 2. Re-seed transparency config
+  // 2. Re-seed transparency config (7 Ar-Raudhah-specific categories)
   console.log('  Seeding transparency config...')
-  const { data: configs } = await supabase
-    .from('transparency_config')
-    .insert([
-      { category: 'Mosque Operations & Maintenance', percentage: 35, description: 'Daily upkeep, utilities, and facility maintenance of the mosque', sort_order: 1, target: 24000 },
-      { category: 'Religious Education', percentage: 25, description: 'Madrasah programmes, Quran classes, and Islamic studies', sort_order: 2, target: 18000 },
-      { category: 'Community Welfare & Assistance', percentage: 20, description: 'Financial aid, food distribution, and family support services', sort_order: 3, target: 12000 },
-      { category: 'Youth Development', percentage: 10, description: 'Mentorship programmes, sports, and leadership development for youth', sort_order: 4, target: 9600 },
-      { category: "Da'wah & Outreach", percentage: 10, description: 'Community events, interfaith dialogues, and public education', sort_order: 5, target: 6000 },
-    ])
-    .select('id')
-    .order('sort_order')
+  let configRows = [
+    { category: 'Khidmat Jenazah', percentage: 30, description: 'Funeral services, burial assistance, and bereavement support for the community', sort_order: 1, target: 21600 },
+    { category: 'Zakat Family Support', percentage: 20, description: 'Financial assistance, groceries, and essential aid for families in need', sort_order: 2, target: 14400 },
+    { category: 'Islamic Education', percentage: 15, description: 'Subsidised Quran classes, Islamic studies, and enrichment programmes for all ages', sort_order: 3, target: 10800 },
+    { category: 'Youth Programmes', percentage: 12, description: 'aLIVE, Al-Fateh, sports, mentorship, and leadership development for youth', sort_order: 4, target: 8640 },
+    { category: 'Community Outreach', percentage: 10, description: 'ARRPromise, interfaith dialogues, new Muslim support, and public education', sort_order: 5, target: 7200 },
+    { category: 'Mosque Operations', percentage: 8, description: 'Utilities, maintenance, cleaning, and daily upkeep of the mosque', sort_order: 6, target: 5760 },
+    { category: 'Community Events', percentage: 5, description: 'Hijrah Walk, Ramadan bazaar, Hari Raya celebrations, and festive programmes', sort_order: 7, target: 3600 },
+  ]
 
-  const configIds = (configs ?? []).map((c) => c.id)
+  const configs = await insertRows(supabase, 'transparency_config', configRows, 'id')
+  if (!configs || configs.length === 0) {
+    console.error('Failed to seed transparency config')
+    process.exit(1)
+  }
 
-  // 3. Re-seed donors
-  console.log('  Seeding donors...')
+  // 3. Re-seed members
+  console.log('  Seeding members...')
   const { data: donors } = await supabase
     .from('donors')
     .insert([
@@ -68,7 +96,7 @@ async function reset() {
     .order('id')
 
   if (!donors || donors.length < 3) {
-    console.error('Failed to create donors')
+    console.error('Failed to create members')
     process.exit(1)
   }
 
@@ -78,15 +106,13 @@ async function reset() {
   const grace30 = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString()
   const grace12 = new Date(now.getTime() + 12 * 24 * 60 * 60 * 1000).toISOString()
 
-  const { data: pledges } = await supabase
-    .from('pledges')
-    .insert([
-      { donor_id: donors[0].id, amount: 50, frequency: 'MONTHLY', reminder_day: 1, status: 'ACTIVE', missed_count: 0, initiative_priorities: configIds.slice(0, 3) },
-      { donor_id: donors[1].id, amount: 100, frequency: 'MONTHLY', reminder_day: 1, status: 'ACTIVE', missed_count: 2, grace_deadline: grace30, initiative_priorities: configIds.slice(1, 4) },
-      { donor_id: donors[2].id, amount: 30, frequency: 'MONTHLY', reminder_day: 1, status: 'ACTIVE', missed_count: 3, grace_deadline: grace12, initiative_priorities: configIds },
-    ])
-    .select('id, donor_id, amount')
-    .order('id')
+  const pledgeRows = [
+    { donor_id: donors[0].id, amount: 20, frequency: 'MONTHLY', reminder_day: 1, status: 'ACTIVE', tier: 'FAMILY', missed_count: 0 },
+    { donor_id: donors[1].id, amount: 5, frequency: 'MONTHLY', reminder_day: 1, status: 'ACTIVE', tier: 'INDIVIDUAL', missed_count: 2, grace_deadline: grace30 },
+    { donor_id: donors[2].id, amount: 30, frequency: 'MONTHLY', reminder_day: 1, status: 'ACTIVE', tier: 'CUSTOM', missed_count: 3, grace_deadline: grace12 },
+  ]
+
+  const pledges = await insertRows(supabase, 'pledges', pledgeRows, 'id, donor_id, amount')
 
   if (!pledges || pledges.length < 3) {
     console.error('Failed to create pledges')
@@ -123,7 +149,7 @@ async function reset() {
 
   console.log('\nReset complete!')
   console.log(`  ${(configs ?? []).length} transparency categories`)
-  console.log(`  ${donors.length} donors`)
+  console.log(`  ${donors.length} members`)
   console.log(`  ${pledges.length} pledges (1 healthy, 2 at-risk)`)
   console.log(`  ${donations.length} donations`)
 }

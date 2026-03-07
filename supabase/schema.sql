@@ -24,9 +24,10 @@ CREATE TABLE pledges (
   frequency frequency_type NOT NULL DEFAULT 'MONTHLY',
   reminder_day INTEGER NOT NULL DEFAULT 1 CHECK (reminder_day BETWEEN 1 AND 28),
   status pledge_status_type NOT NULL DEFAULT 'ACTIVE',
+  tier TEXT NOT NULL DEFAULT 'INDIVIDUAL',
+  payment_method TEXT NOT NULL DEFAULT 'MANUAL',
   missed_count INTEGER NOT NULL DEFAULT 0,
   grace_deadline TIMESTAMPTZ,
-  initiative_priorities JSONB NOT NULL DEFAULT '[]',
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

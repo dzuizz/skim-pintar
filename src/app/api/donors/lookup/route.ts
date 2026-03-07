@@ -11,11 +11,11 @@ function normalizePhone(phone: string): string {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { phone, name } = body as { phone?: string; name?: string }
+    const { phone } = body as { phone?: string }
 
-    if (!phone || !name) {
+    if (!phone) {
       return NextResponse.json(
-        { error: 'Phone and name are required' },
+        { error: 'Phone number is required' },
         { status: 400 },
       )
     }
@@ -29,9 +29,9 @@ export async function POST(request: NextRequest) {
       .eq('phone', normalizedPhone)
       .maybeSingle()
 
-    if (!donor || donor.name.toLowerCase() !== name.trim().toLowerCase()) {
+    if (!donor) {
       return NextResponse.json(
-        { error: 'No matching donor found. Please check your name and phone number.' },
+        { error: 'No member found with this phone number. Please check and try again.' },
         { status: 404 },
       )
     }
@@ -73,6 +73,10 @@ export async function POST(request: NextRequest) {
             frequency: pledge.frequency,
             reminderDay: pledge.reminder_day,
             status: pledge.status,
+            tier: pledge.tier || 'INDIVIDUAL',
+            paymentMethod: pledge.payment_method || 'MANUAL',
+            missedCount: pledge.missed_count || 0,
+            graceDeadline: pledge.grace_deadline || null,
           }
         : null,
       donations: (donations ?? []).map((d) => ({
