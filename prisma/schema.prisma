@@ -1,0 +1,70 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Donor {
+  id              Int        @id @default(autoincrement())
+  name            String
+  phone           String     @unique
+  email           String?
+  nricLast4       String?
+  reminderChannel String     @default("WHATSAPP") // WHATSAPP, SMS, EMAIL
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  pledges         Pledge[]
+  donations       Donation[]
+}
+
+model Pledge {
+  id          Int        @id @default(autoincrement())
+  donorId     Int
+  donor       Donor      @relation(fields: [donorId], references: [id])
+  amount      Float
+  frequency   String     @default("MONTHLY") // MONTHLY, QUARTERLY, ANNUAL
+  reminderDay Int        @default(1)
+  status      String     @default("ACTIVE") // ACTIVE, PAUSED, CANCELLED
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  donations   Donation[]
+}
+
+model Donation {
+  id         Int       @id @default(autoincrement())
+  pledgeId   Int
+  pledge     Pledge    @relation(fields: [pledgeId], references: [id])
+  donorId    Int
+  donor      Donor     @relation(fields: [donorId], references: [id])
+  amount     Float
+  reference  String
+  cycleMonth String
+  status     String    @default("PENDING") // PENDING, RECEIVED, MISSED
+  receivedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+model Admin {
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model TransparencyConfig {
+  id          Int      @id @default(autoincrement())
+  category    String
+  percentage  Int
+  description String
+  sortOrder   Int
+  updatedAt   DateTime @updatedAt
+}
