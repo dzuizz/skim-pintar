@@ -175,7 +175,7 @@ export default function ReconcilePage() {
               dragActive
                 ? 'border-primary-500 bg-primary-50'
                 : selectedFile
-                  ? 'border-green-300 bg-green-50'
+                  ? 'border-primary-300 bg-primary-50'
                   : 'border-gray-300 hover:border-primary-400 hover:bg-gray-50'
             }`}
           >
@@ -194,7 +194,7 @@ export default function ReconcilePage() {
             {selectedFile ? (
               <div className="space-y-2">
                 <svg
-                  className="mx-auto h-10 w-10 text-green-500"
+                  className="mx-auto h-10 w-10 text-primary-500"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -206,7 +206,7 @@ export default function ReconcilePage() {
                     d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-                <p className="text-sm font-medium text-green-700">
+                <p className="text-sm font-medium text-primary-700">
                   {selectedFile.name}
                 </p>
                 <p className="text-xs text-gray-500">
@@ -273,8 +273,8 @@ export default function ReconcilePage() {
 
       {/* Success message */}
       {success && (
-        <div className="rounded-lg border border-green-200 bg-green-50 p-4">
-          <p className="text-sm text-green-700">{success}</p>
+        <div className="rounded-lg border border-primary-200 bg-primary-50 p-4">
+          <p className="text-sm text-primary-700">{success}</p>
         </div>
       )}
 
@@ -285,7 +285,7 @@ export default function ReconcilePage() {
           <div className="grid grid-cols-3 gap-4">
             <Card>
               <CardContent className="py-4 text-center">
-                <p className="text-2xl font-bold text-green-700">
+                <p className="text-2xl font-bold text-primary-700">
                   {result.matched.length}
                 </p>
                 <p className="text-xs text-gray-500 mt-1">Matched</p>
@@ -312,8 +312,8 @@ export default function ReconcilePage() {
           {/* Matched Section */}
           {result.matched.length > 0 && (
             <Card>
-              <CardHeader className="bg-green-50 border-b border-green-100">
-                <CardTitle className="text-green-800">
+              <CardHeader className="bg-primary-50 border-b border-primary-100">
+                <CardTitle className="text-primary-800">
                   Matched Payments ({result.matched.length})
                 </CardTitle>
               </CardHeader>

@@ -188,7 +188,7 @@ export default function SettingsPage() {
               <div
                 className={`text-sm px-4 py-2.5 rounded-lg ${
                   message.type === 'success'
-                    ? 'bg-green-50 text-green-700 border border-green-200'
+                    ? 'bg-primary-50 text-primary-700 border border-primary-200'
                     : 'bg-red-50 text-red-700 border border-red-200'
                 }`}
               >

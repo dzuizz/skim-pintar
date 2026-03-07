@@ -183,8 +183,8 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
 
       {/* Success Message */}
       {successMessage && (
-        <div className="rounded-lg border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20 p-3">
-          <p className="text-sm text-green-700">{successMessage}</p>
+        <div className="rounded-lg border border-primary-200 dark:border-primary-800 bg-primary-50 dark:bg-primary-900/20 p-3">
+          <p className="text-sm text-primary-700 dark:text-primary-400">{successMessage}</p>
         </div>
       )}
 

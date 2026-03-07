@@ -151,7 +151,7 @@ export default function SimulatePage() {
         <div
           className={`rounded-lg border p-3 ${
             message.type === 'success'
-              ? 'border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
+              ? 'border-primary-200 dark:border-primary-800 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400'
               : 'border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400'
           }`}
         >
@@ -196,7 +196,7 @@ export default function SimulatePage() {
                 <p className="text-xs text-gray-500 dark:text-gray-400">Pending</p>
               </div>
               <div>
-                <p className="text-2xl font-bold text-green-600">
+                <p className="text-2xl font-bold text-primary-600">
                   {filteredDonations.filter((d) => d.status === 'RECEIVED').length}
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-400">Received</p>

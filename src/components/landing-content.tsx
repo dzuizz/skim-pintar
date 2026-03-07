@@ -134,13 +134,13 @@ const BENEFIT_TABS: Record<TabKey, { label: string; age: string; benefits: { ico
 }
 
 const PERKS = [
-  { icon: 'chart', title: 'Monthly Impact Report', desc: 'See exactly how your $5 helped' },
+  { icon: 'chart', title: 'Monthly Impact Report', desc: 'See exactly where your sadaqah goes each month' },
   { icon: 'moon', title: 'Ramadan Multiplier', desc: 'Extra sadaqah jariyah during the blessed month' },
-  { icon: 'shield', title: 'Emergency Assistance Fund', desc: 'Priority welfare support during hardship' },
-  { icon: 'mic', title: 'Exclusive Lecture Series', desc: 'Monthly members-only talks with local asatizah' },
-  { icon: 'gift', title: 'Hari Raya Care Package', desc: 'Annual gift for active members' },
-  { icon: 'heart', title: 'Sponsor a Family', desc: 'Add $5 to cover a family in need' },
-  { icon: 'book', title: 'Mosque Library Access', desc: 'Physical and digital Islamic resources' },
+  { icon: 'shield', title: 'Khidmat Jenazah Coverage', desc: 'Full funeral service coverage for you and your family' },
+  { icon: 'mic', title: 'Exclusive Lecture Series', desc: 'Monthly members-only talks with Ar-Raudhah asatizah' },
+  { icon: 'gift', title: 'Hari Raya Care Package', desc: 'Annual Hari Raya gift hamper for active members' },
+  { icon: 'heart', title: 'Sponsor a Family', desc: 'Add $5 to cover a family in need via zakat fund' },
+  { icon: 'book', title: 'Ar-Raudhah Library', desc: 'Access to the mosque\'s physical and digital Islamic resources' },
   { icon: 'award', title: 'Community Recognition', desc: 'From thank-you cards to lifetime membership' },
 ]
 
@@ -176,16 +176,55 @@ const MILESTONES = [
 ]
 
 const IMPACT_STATS = [
-  { target: 15, suffix: '', label: 'Students in Quran Classes' },
-  { target: 3, suffix: '', label: 'Families Received Groceries' },
-  { target: 8, suffix: '', label: 'Community Events' },
-  { target: 120, suffix: '+', label: 'Volunteer Hours' },
+  { target: 45, suffix: '+', label: 'Raudhatul Quran Students' },
+  { target: 12, suffix: '', label: 'Families on Welfare Support' },
+  { target: 80, suffix: '+', label: 'aLIVE Participants' },
+  { target: 200, suffix: '+', label: 'Khidmat Jenazah Cases/Year' },
 ]
 
 const HERO_STATS = [
   { target: 2000, suffix: '+', label: 'Members' },
   { target: 500, suffix: '+', label: 'Families' },
   { target: 300, suffix: '+', label: 'Students' },
+]
+
+const PROGRAMMES = [
+  {
+    icon: 'book',
+    name: 'aLIVE',
+    tagline: 'Children\'s Enrichment',
+    desc: 'Weekly enrichment programme for children aged 7–12 covering Islamic studies, leadership, and character building.',
+  },
+  {
+    icon: 'star',
+    name: 'Raudhatul Quran',
+    tagline: 'Quran Memorisation',
+    desc: 'Structured tahfiz programme guiding students of all ages through Quran memorisation with certified asatizah.',
+  },
+  {
+    icon: 'compass',
+    name: 'Al-Fateh Youth',
+    tagline: 'Youth Camps & Retreats',
+    desc: 'Adventure camps, leadership retreats, and mentorship for teenagers building confidence and iman.',
+  },
+  {
+    icon: 'shield',
+    name: 'Khidmat Jenazah',
+    tagline: 'Funeral Services',
+    desc: 'Complete funeral management — from gusl and kafan to burial — ensuring dignified farewell for every community member.',
+  },
+  {
+    icon: 'heart',
+    name: 'Welfare & Zakat',
+    tagline: 'Family Support',
+    desc: 'Monthly grocery assistance, financial aid, and emergency support for families in need through zakat distribution.',
+  },
+  {
+    icon: 'trophy',
+    name: 'Hijrah Walk',
+    tagline: 'Community Fitness',
+    desc: 'Weekly community walks promoting health and bonding — open to all ages, from youth to seniors.',
+  },
 ]
 
 // ============================================
@@ -195,14 +234,6 @@ const HERO_STATS = [
 function Counter({ target, suffix = '', active }: { target: number; suffix?: string; active: boolean }) {
   const count = useCountUp(target, 2000, active)
   return <>{count.toLocaleString()}{suffix}</>
-}
-
-function CheckIcon() {
-  return (
-    <svg className="w-4 h-4 text-primary-600 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="20 6 9 17 4 12" />
-    </svg>
-  )
 }
 
 // ============================================
@@ -326,14 +357,18 @@ export function LandingContent() {
         {/* Hero content */}
         <div className="relative z-10 max-w-4xl mx-auto px-6 py-32 text-center">
           <p className={`text-sm font-semibold text-gold-400 uppercase tracking-[0.2em] mb-5 transition-all duration-700 ${heroReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-            Masjid Ar-Raudhah
+            Masjid Ar-Raudhah · Bishan, Singapore
           </p>
           <h1 className={`text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-white leading-[1.1] tracking-tight transition-all duration-700 delay-100 ${heroReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
             Be Part of Something<br />
             <span className="bg-gradient-to-r from-primary-200 via-gold-300 to-primary-200 bg-clip-text text-transparent">Greater Than Yourself</span>
           </h1>
           <p className={`mt-6 text-base sm:text-lg text-primary-100/90 max-w-2xl mx-auto leading-relaxed transition-all duration-700 delay-200 ${heroReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
-            Masjid Ar-Raudhah&apos;s official membership programme. Join 2,000+ members building community through education, welfare, and faith — from just $5/month.
+            Join Skim Pintar — Masjid Ar-Raudhah&apos;s official membership programme powering aLIVE, Raudhatul Quran, Khidmat Jenazah, and more. From just $5/month.
+          </p>
+          <p className={`mt-4 text-sm italic text-primary-200/70 max-w-xl mx-auto transition-all duration-700 delay-250 ${heroReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+            &ldquo;The example of those who spend their wealth in the cause of Allah is that of a grain that sprouts seven ears; in each ear a hundred grains.&rdquo;
+            <span className="block mt-1 not-italic text-gold-400/80 text-xs">— Al-Baqarah 2:261</span>
           </p>
 
           {/* CTAs */}
@@ -401,6 +436,42 @@ export function LandingContent() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ================================================================ */}
+      {/* PROGRAMMES - WHAT YOUR SUPPORT POWERS                            */}
+      {/* ================================================================ */}
+      <section className="py-24 sm:py-32 bg-warmWhite dark:bg-gray-800">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-center reveal">
+            <p className="text-sm font-semibold text-gold-600 dark:text-gold-400 uppercase tracking-wider">Ar-Raudhah Programmes</p>
+            <h2 className="mt-3 text-3xl sm:text-4xl font-extrabold text-primary-900 dark:text-white tracking-tight">What Your Support Powers</h2>
+            <div className="mx-auto mt-4 h-1 w-16 rounded-full bg-gold-500" />
+            <p className="mt-4 text-gray-500 dark:text-gray-400 max-w-lg mx-auto">
+              Every dollar goes directly to programmes serving our community — from children&apos;s enrichment to funeral services.
+            </p>
+          </div>
+
+          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {PROGRAMMES.map((prog, i) => (
+              <div key={i} className={`reveal reveal-delay-${Math.min(i, 5)} bg-white dark:bg-gray-900 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 card-hover`}>
+                <div className="w-10 h-10 rounded-xl bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center text-primary-700 dark:text-primary-400 mb-4">
+                  <Icon name={prog.icon} className="w-5 h-5" />
+                </div>
+                <div className="flex items-baseline gap-2 mb-1.5">
+                  <h3 className="font-bold text-primary-900 dark:text-primary-100 text-base">{prog.name}</h3>
+                  <span className="text-xs text-gold-600 dark:text-gold-400 font-medium">{prog.tagline}</span>
+                </div>
+                <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">{prog.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          <p className="mt-10 text-center text-sm italic text-gray-500 dark:text-gray-400 max-w-md mx-auto reveal">
+            &ldquo;The most beloved deed to Allah is the most regular and constant, even if it were little.&rdquo;
+            <span className="block mt-1 not-italic text-gold-600 dark:text-gold-400 text-xs font-medium">— Sahih al-Bukhari</span>
+          </p>
         </div>
       </section>
 
@@ -487,7 +558,7 @@ export function LandingContent() {
           </div>
 
           <p className="mt-10 text-center text-sm text-gray-500 dark:text-gray-400 reveal">
-            250% tax deduction on donations (IPC-registered mosque). Cash payment available at mosque counter.
+            Masjid Ar-Raudhah is IPC-registered — enjoy 250% tax deduction. Pay via PayNow, bank transfer, or cash at the mosque counter.
           </p>
         </div>
       </section>
@@ -531,8 +602,8 @@ export function LandingContent() {
         <div className="absolute inset-0 islamic-pattern-dark pointer-events-none" aria-hidden="true" />
         <div ref={impactView.ref} className="relative max-w-5xl mx-auto px-6 text-center">
           <div className="reveal">
-            <p className="text-sm font-semibold text-gold-400 uppercase tracking-wider">Real Impact</p>
-            <h2 className="mt-3 text-3xl sm:text-4xl font-extrabold text-white tracking-tight">Every Dollar Creates Measurable Change</h2>
+            <p className="text-sm font-semibold text-gold-400 uppercase tracking-wider">Community Impact</p>
+            <h2 className="mt-3 text-3xl sm:text-4xl font-extrabold text-white tracking-tight">Your Sadaqah Jariyah in Action</h2>
             <div className="mx-auto mt-4 h-1 w-16 rounded-full bg-gold-500" />
           </div>
 
@@ -548,7 +619,7 @@ export function LandingContent() {
           </div>
 
           <p className="mt-12 text-primary-100/70 text-sm max-w-md mx-auto reveal">
-            Numbers from the past month. Updated quarterly in our transparency report.
+            Numbers from Ar-Raudhah&apos;s active programmes. Updated quarterly in our transparency report.
           </p>
         </div>
       </section>
@@ -558,10 +629,17 @@ export function LandingContent() {
       {/* ================================================================ */}
       <section className="py-24 sm:py-32 bg-white dark:bg-gray-900 islamic-pattern">
         <div className="max-w-3xl mx-auto px-6 text-center">
+          <p className="text-sm italic text-gray-500 dark:text-gray-400 max-w-lg mx-auto mb-8 reveal">
+            &ldquo;Charity does not decrease wealth.&rdquo;
+            <span className="block mt-1 not-italic text-gold-600 dark:text-gold-400 text-xs font-medium">— Sahih Muslim</span>
+          </p>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-primary-900 dark:text-white tracking-tight reveal">
-            Ready to Join Our Community?
+            Ready to Support Masjid Ar-Raudhah?
           </h2>
           <div className="mx-auto mt-4 h-1 w-16 rounded-full bg-gold-500 reveal reveal-delay-1" />
+          <p className="mt-4 text-gray-500 dark:text-gray-400 max-w-md mx-auto text-sm reveal reveal-delay-1">
+            IPC-registered mosque — your donations qualify for 250% tax deduction. Pay via PayNow (UEN: S93MQ0024E) or bank transfer.
+          </p>
 
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 reveal reveal-delay-2">
             <Link href="/pledge" className="bg-primary-800 hover:bg-primary-700 text-white px-8 py-3.5 rounded-xl text-base font-semibold transition-all shadow-xl shadow-primary-900/20 hover:-translate-y-0.5">
@@ -591,9 +669,11 @@ export function LandingContent() {
                 <span className="text-lg font-bold text-white tracking-tight">Skim Pintar</span>
               </div>
               <p className="mt-3 text-sm text-primary-300/60 leading-relaxed">
-                Masjid Ar-Raudhah&apos;s official membership programme. Building community through education, welfare, and faith.
+                Masjid Ar-Raudhah&apos;s official membership programme. Building community through education, welfare, and faith since 1993.
               </p>
               <p className="mt-3 text-xs text-primary-300/40">1 Jln Kuak, Singapore 799316</p>
+              <p className="mt-1 text-xs text-primary-300/40">PayNow UEN: S93MQ0024E</p>
+              <p className="mt-1 text-xs text-primary-300/40">IPC-Registered Mosque</p>
             </div>
 
             {/* Membership */}

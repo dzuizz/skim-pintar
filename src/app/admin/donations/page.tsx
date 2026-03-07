@@ -81,7 +81,7 @@ export default async function AdminDonationsPage({ searchParams }: PageProps) {
         <Card>
           <CardContent className="py-5">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-green-50 text-green-700">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary-50 text-primary-700">
                 <svg
                   className="h-6 w-6"
                   fill="none"
