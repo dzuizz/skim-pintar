@@ -1,16 +1,16 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({
-  variable: "--font-inter",
+const plusJakarta = Plus_Jakarta_Sans({
+  variable: "--font-jakarta",
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
   title: "Skim Pintar | Masjid Ar-Raudhah",
   description:
-    "Support Ar-Raudhah's community initiatives through Skim Pintar membership via PayNow",
+    "Join 2,000+ members building community through education, welfare, and faith at Masjid Ar-Raudhah — from just $5/month.",
 };
 
 export default function RootLayout({
@@ -28,7 +28,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${inter.variable} bg-warmWhite dark:bg-gray-900 text-gray-900 dark:text-gray-100 antialiased`}
+        className={`${plusJakarta.variable} bg-warmWhite dark:bg-gray-900 text-gray-900 dark:text-gray-100 antialiased`}
       >
         {children}
       </body>
