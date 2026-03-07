@@ -23,6 +23,7 @@ export function ProfileEditor({ donor, onUpdate }: ProfileEditorProps) {
   const [editing, setEditing] = useState(false)
   const [saving, setSaving] = useState(false)
   const [success, setSuccess] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [form, setForm] = useState({
     name: donor.name,
     email: donor.email || '',
@@ -33,6 +34,7 @@ export function ProfileEditor({ donor, onUpdate }: ProfileEditorProps) {
   async function handleSave() {
     setSaving(true)
     setSuccess(false)
+    setError(null)
     try {
       const res = await fetch(`/api/donors/${donor.id}/profile`, {
         method: 'PUT',
@@ -44,20 +46,30 @@ export function ProfileEditor({ donor, onUpdate }: ProfileEditorProps) {
           reminderChannel: form.reminderChannel,
         }),
       })
-      if (!res.ok) throw new Error('Failed to save')
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        throw new Error(body.error || 'Failed to save')
+      }
       const updated = await res.json()
-      setSuccess(true)
-      setEditing(false)
-      onUpdate?.({
+      const savedDonor = {
         id: donor.id,
         name: updated.name,
         email: updated.email,
         address: updated.address,
         reminderChannel: updated.reminder_channel,
+      }
+      setForm({
+        name: savedDonor.name,
+        email: savedDonor.email || '',
+        address: savedDonor.address || '',
+        reminderChannel: savedDonor.reminderChannel,
       })
+      setSuccess(true)
+      setEditing(false)
+      onUpdate?.(savedDonor)
       setTimeout(() => setSuccess(false), 3000)
-    } catch {
-      // ignore
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
     } finally {
       setSaving(false)
     }
@@ -83,8 +95,13 @@ export function ProfileEditor({ donor, onUpdate }: ProfileEditorProps) {
       </CardHeader>
       <CardContent className="pt-0">
         {success && (
-          <div className="mb-4 rounded-lg border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20 p-2">
-            <p className="text-xs text-green-700 dark:text-green-400">{t.dashboard.profileUpdated}</p>
+          <div className="mb-4 rounded-lg border border-primary-200 dark:border-primary-800 bg-primary-50 dark:bg-primary-900/20 p-2">
+            <p className="text-xs text-primary-700 dark:text-primary-400">{t.dashboard.profileUpdated}</p>
+          </div>
+        )}
+        {error && (
+          <div className="mb-4 rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-2">
+            <p className="text-xs text-red-600 dark:text-red-400">{error}</p>
           </div>
         )}
 
@@ -128,10 +145,10 @@ export function ProfileEditor({ donor, onUpdate }: ProfileEditorProps) {
               </div>
             </div>
             <div className="flex gap-2 pt-2">
-              <Button variant="primary" size="sm" onClick={handleSave} disabled={saving}>
+              <Button type="button" variant="primary" size="sm" onClick={handleSave} disabled={saving}>
                 {saving ? t.dashboard.saving : t.dashboard.saveChanges}
               </Button>
-              <Button variant="outline" size="sm" onClick={() => { setEditing(false); setForm({ name: donor.name, email: donor.email || '', address: donor.address || '', reminderChannel: donor.reminderChannel }) }}>
+              <Button type="button" variant="outline" size="sm" onClick={() => { setEditing(false); setError(null); setForm({ name: donor.name, email: donor.email || '', address: donor.address || '', reminderChannel: donor.reminderChannel }) }}>
                 {t.dashboard.cancel}
               </Button>
             </div>
