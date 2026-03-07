@@ -23,10 +23,10 @@ interface StepAmountProps {
 }
 
 const presets = [
-  { amount: 10, description: 'Supports daily mosque maintenance' },
-  { amount: 30, description: 'Helps fund a student\'s enrichment class' },
-  { amount: 50, description: 'Contributes to community welfare programmes' },
-  { amount: 100, description: 'Sustains multiple Ar-Raudhah initiatives' },
+  { amount: 10, description: 'Keeps our youth programmes and classes running' },
+  { amount: 30, description: 'Funds Quran classes, mentorship & community events' },
+  { amount: 50, description: 'Supports families in need and outreach programmes' },
+  { amount: 100, description: 'Powers education, welfare & youth development' },
 ]
 
 const frequencyOptions = [
