@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
+import { supabase } from '@/lib/supabase'
 
 export async function GET(request: NextRequest) {
   try {
@@ -7,35 +7,39 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search') || ''
     const status = searchParams.get('status') || ''
 
-    // Build the where clause
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const where: any = {}
+    let query = supabase
+      .from('donors')
+      .select('*, pledges(*)')
+      .order('created_at', { ascending: false })
 
     if (search) {
-      where.OR = [
-        { name: { contains: search } },
-        { phone: { contains: search } },
-      ]
+      query = query.or(`name.ilike.%${search}%,phone.ilike.%${search}%`)
     }
 
+    const { data, error } = await query
+
+    if (error) throw error
+
+    let donors = data ?? []
+
+    // Filter by pledge status in JS (no direct Supabase equivalent for "has some pledge with status")
     if (status) {
-      where.pledges = {
-        some: { status },
-      }
+      donors = donors.filter((d) =>
+        d.pledges?.some((p: { status: string }) => p.status === status),
+      )
     }
 
-    const donors = await prisma.donor.findMany({
-      where,
-      include: {
-        pledges: {
-          orderBy: { createdAt: 'desc' },
-          take: 1,
-        },
-      },
-      orderBy: { createdAt: 'desc' },
-    })
+    // Trim pledges to only the most recent one (matching original behavior)
+    const result = donors.map((d) => ({
+      ...d,
+      pledges: d.pledges
+        ?.sort((a: { created_at: string }, b: { created_at: string }) =>
+          b.created_at.localeCompare(a.created_at),
+        )
+        .slice(0, 1),
+    }))
 
-    return NextResponse.json({ donors })
+    return NextResponse.json({ donors: result })
   } catch (error) {
     console.error('Donors list error:', error)
     return NextResponse.json(
