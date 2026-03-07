@@ -1,6 +1,6 @@
 export const dynamic = 'force-dynamic'
 
-import { prisma } from '@/lib/db'
+import { supabase } from '@/lib/supabase'
 import { formatCurrency } from '@/lib/utils'
 import { Card, CardContent } from '@/components/ui/card'
 import { MonthPicker } from '@/components/admin/month-picker'
@@ -22,13 +22,13 @@ export default async function AdminDonationsPage({ searchParams }: PageProps) {
     : getCurrentMonth()
 
   // Fetch all donations for this cycle month
-  const donations = await prisma.donation.findMany({
-    where: { cycleMonth: month },
-    include: {
-      donor: { select: { name: true } },
-    },
-    orderBy: { createdAt: 'desc' },
-  })
+  const { data: donations } = await supabase
+    .from('donations')
+    .select('*, donors(name)')
+    .eq('cycle_month', month)
+    .order('created_at', { ascending: false })
+
+  const donationsList = donations ?? []
 
   // Sort: PENDING first, then RECEIVED, then MISSED
   const statusOrder: Record<string, number> = {
@@ -37,7 +37,7 @@ export default async function AdminDonationsPage({ searchParams }: PageProps) {
     MISSED: 2,
   }
 
-  const sorted = donations.sort(
+  const sorted = donationsList.sort(
     (a, b) => (statusOrder[a.status] ?? 3) - (statusOrder[b.status] ?? 3),
   )
 
@@ -46,18 +46,18 @@ export default async function AdminDonationsPage({ searchParams }: PageProps) {
   const pending = sorted.filter((d) => d.status === 'PENDING')
   const missed = sorted.filter((d) => d.status === 'MISSED')
 
-  const receivedTotal = received.reduce((sum, d) => sum + d.amount, 0)
-  const pendingTotal = pending.reduce((sum, d) => sum + d.amount, 0)
-  const missedTotal = missed.reduce((sum, d) => sum + d.amount, 0)
+  const receivedTotal = received.reduce((sum, d) => sum + Number(d.amount), 0)
+  const pendingTotal = pending.reduce((sum, d) => sum + Number(d.amount), 0)
+  const missedTotal = missed.reduce((sum, d) => sum + Number(d.amount), 0)
 
   // Transform for client component
   const tableData = sorted.map((d) => ({
     id: d.id,
-    donorName: d.donor.name,
-    amount: d.amount,
+    donorName: (d.donors as unknown as { name: string })?.name ?? '',
+    amount: Number(d.amount),
     reference: d.reference,
     status: d.status as 'PENDING' | 'RECEIVED' | 'MISSED',
-    receivedAt: d.receivedAt ? d.receivedAt.toISOString() : null,
+    receivedAt: d.received_at ?? null,
   }))
 
   return (

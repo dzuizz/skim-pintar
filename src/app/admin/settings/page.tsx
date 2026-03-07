@@ -9,7 +9,7 @@ interface Admin {
   id: number
   name: string
   email: string
-  createdAt: string
+  created_at: string
 }
 
 export default function SettingsPage() {
@@ -132,7 +132,7 @@ export default function SettingsPage() {
                     <tr key={admin.id} className="border-b border-gray-50 last:border-0">
                       <td className="px-6 py-3 text-gray-900 font-medium">{admin.name}</td>
                       <td className="px-6 py-3 text-gray-600">{admin.email}</td>
-                      <td className="px-6 py-3 text-gray-500">{formatDate(admin.createdAt)}</td>
+                      <td className="px-6 py-3 text-gray-500">{formatDate(admin.created_at)}</td>
                     </tr>
                   ))}
                 </tbody>
