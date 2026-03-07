@@ -76,6 +76,18 @@ function ordinalDay(day: number): string {
   return day + (suffixes[(v - 20) % 10] || suffixes[v] || suffixes[0])
 }
 
+function reminderLabel(day: number, frequency: string): string {
+  const d = ordinalDay(day)
+  switch (frequency) {
+    case 'QUARTERLY':
+      return `${d} of every quarter`
+    case 'ANNUAL':
+      return `${d} of the year`
+    default:
+      return `${d} of every month`
+  }
+}
+
 export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
   const [data, setData] = useState(initialData)
   const [confirmAction, setConfirmAction] = useState<ConfirmAction>(null)
@@ -179,7 +191,7 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
               <div>
                 <p className="text-xs text-gray-500 uppercase tracking-wide">Reminder Day</p>
                 <p className="text-sm font-medium text-gray-900">
-                  {ordinalDay(pledge.reminderDay)} of month
+                  {reminderLabel(pledge.reminderDay, pledge.frequency)}
                 </p>
               </div>
               <div>

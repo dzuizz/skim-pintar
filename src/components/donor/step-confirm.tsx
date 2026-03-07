@@ -1,6 +1,8 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
+import { TransparencyPreview } from '@/components/donor/transparency-preview'
 import { formatCurrency } from '@/lib/utils'
 
 interface PledgeFormData {
@@ -13,6 +15,12 @@ interface PledgeFormData {
   customAmount: string
   frequency: 'MONTHLY' | 'QUARTERLY' | 'ANNUAL'
   reminderDay: number
+}
+
+interface Category {
+  category: string
+  percentage: number
+  description: string
 }
 
 interface StepConfirmProps {
@@ -39,6 +47,18 @@ const dayLabels: Record<number, string> = {
   25: '25th',
 }
 
+function reminderDayLabel(day: number, frequency: string): string {
+  const d = dayLabels[day] || `${day}th`
+  switch (frequency) {
+    case 'QUARTERLY':
+      return `${d} of every quarter`
+    case 'ANNUAL':
+      return `${d} of the year`
+    default:
+      return `${d} of every month`
+  }
+}
+
 function formatPhone(phone: string): string {
   const digits = phone.replace(/\D/g, '')
   if (digits.length === 8) return `+65 ${digits.slice(0, 4)} ${digits.slice(4)}`
@@ -48,6 +68,15 @@ function formatPhone(phone: string): string {
 }
 
 export function StepConfirm({ data, agreed, onAgreeChange }: StepConfirmProps) {
+  const [categories, setCategories] = useState<Category[]>([])
+
+  useEffect(() => {
+    fetch('/api/transparency')
+      .then((res) => (res.ok ? res.json() : []))
+      .then(setCategories)
+      .catch(() => {})
+  }, [])
+
   return (
     <div className="space-y-6">
       <Card>
@@ -81,7 +110,7 @@ export function StepConfirm({ data, agreed, onAgreeChange }: StepConfirmProps) {
             <div className="flex justify-between">
               <dt className="text-sm text-gray-500">Reminder Day</dt>
               <dd className="text-sm font-medium text-gray-900">
-                {dayLabels[data.reminderDay] || `${data.reminderDay}th`} of the month
+                {reminderDayLabel(data.reminderDay, data.frequency)}
               </dd>
             </div>
             <div className="flex justify-between">
@@ -94,11 +123,15 @@ export function StepConfirm({ data, agreed, onAgreeChange }: StepConfirmProps) {
         </CardContent>
       </Card>
 
+      {categories.length > 0 && (
+        <TransparencyPreview amount={data.amount} categories={categories} />
+      )}
+
       <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
         <p className="text-sm text-gray-600 leading-relaxed">
           By confirming, you are making a voluntary pledge to donate regularly to
           Masjid Ar-Raudhah. This is not a binding contract — you can pause or
-          cancel anytime. Each donation requires your manual approval via PayNow.
+          cancel anytime. You can pay via PayNow or bank transfer.
         </p>
       </div>
 

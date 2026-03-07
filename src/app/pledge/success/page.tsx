@@ -4,7 +4,7 @@ import { generateReference } from '@/lib/paynow-qr'
 import { formatCurrency } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { QRDisplay } from '@/components/donor/qr-display'
+import { PaymentMethods } from '@/components/donor/payment-methods'
 
 const frequencyLabels: Record<string, string> = {
   MONTHLY: 'Monthly',
@@ -22,6 +22,18 @@ const dayLabels: Record<number, string> = {
   1: '1st',
   15: '15th',
   25: '25th',
+}
+
+function reminderDayLabel(day: number, frequency: string): string {
+  const d = dayLabels[day] || `${day}th`
+  switch (frequency) {
+    case 'QUARTERLY':
+      return `${d} of every quarter`
+    case 'ANNUAL':
+      return `${d} of the year`
+    default:
+      return `${d} of every month`
+  }
 }
 
 interface SuccessPageProps {
@@ -154,7 +166,7 @@ export default async function PledgeSuccessPage({ searchParams }: SuccessPagePro
               <div className="flex justify-between">
                 <dt className="text-sm text-gray-500">Reminder Day</dt>
                 <dd className="text-sm font-medium text-gray-900">
-                  {dayLabels[pledge.reminder_day] || `${pledge.reminder_day}th`} of the month
+                  {reminderDayLabel(pledge.reminder_day, pledge.frequency)}
                 </dd>
               </div>
               <div className="flex justify-between">
@@ -167,12 +179,12 @@ export default async function PledgeSuccessPage({ searchParams }: SuccessPagePro
           </CardContent>
         </Card>
 
-        {/* First donation QR */}
+        {/* First donation payment */}
         <div className="space-y-3">
           <h3 className="text-lg font-semibold text-primary-800 text-center">
             Make Your First Donation Now
           </h3>
-          <QRDisplay amount={qrAmount} reference={qrReference} />
+          <PaymentMethods amount={qrAmount} reference={qrReference} />
         </div>
 
         {/* Action buttons */}

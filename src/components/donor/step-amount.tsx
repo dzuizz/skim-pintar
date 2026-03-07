@@ -35,11 +35,30 @@ const frequencyOptions = [
   { value: 'ANNUAL', label: 'Annual' },
 ]
 
-const reminderDayOptions = [
-  { value: '1', label: '1st of the month' },
-  { value: '15', label: '15th of the month' },
-  { value: '25', label: '25th of the month' },
-]
+function getReminderDayOptions(frequency: string) {
+  const suffix =
+    frequency === 'QUARTERLY'
+      ? 'of every quarter'
+      : frequency === 'ANNUAL'
+        ? 'of the year'
+        : 'of every month'
+  return [
+    { value: '1', label: `1st ${suffix}` },
+    { value: '15', label: `15th ${suffix}` },
+    { value: '25', label: `25th ${suffix}` },
+  ]
+}
+
+function frequencySuffix(frequency: string): string {
+  switch (frequency) {
+    case 'QUARTERLY':
+      return '/quarter'
+    case 'ANNUAL':
+      return '/year'
+    default:
+      return '/month'
+  }
+}
 
 export function StepAmount({ data, onChange, errors }: StepAmountProps) {
   function selectPreset(amount: number) {
@@ -84,7 +103,7 @@ export function StepAmount({ data, onChange, errors }: StepAmountProps) {
                 >
                   {formatCurrency(preset.amount)}
                 </span>
-                <span className="text-sm text-gray-500">/month</span>
+                <span className="text-sm text-gray-500">{frequencySuffix(data.frequency)}</span>
                 <p className="mt-1 text-xs text-gray-500 leading-relaxed">
                   {preset.description}
                 </p>
@@ -119,7 +138,7 @@ export function StepAmount({ data, onChange, errors }: StepAmountProps) {
       {/* Reminder Day */}
       <Select
         label="Reminder Day"
-        options={reminderDayOptions}
+        options={getReminderDayOptions(data.frequency)}
         value={String(data.reminderDay)}
         onChange={(e) => onChange({ reminderDay: parseInt(e.target.value, 10) })}
         error={errors.reminderDay}

@@ -6,7 +6,6 @@ import { Stepper } from '@/components/ui/stepper'
 import { Button } from '@/components/ui/button'
 import { StepContact } from '@/components/donor/step-contact'
 import { StepAmount } from '@/components/donor/step-amount'
-import { StepPreview } from '@/components/donor/step-preview'
 import { StepConfirm } from '@/components/donor/step-confirm'
 
 interface PledgeFormData {
@@ -21,7 +20,7 @@ interface PledgeFormData {
   reminderDay: number
 }
 
-const STEPS = ['Contact Details', 'Donation Amount', 'Impact Preview', 'Confirm']
+const STEPS = ['Contact Details', 'Donation Amount', 'Confirm']
 
 const initialFormData: PledgeFormData = {
   name: '',
@@ -91,9 +90,7 @@ export default function PledgePage() {
       }
     }
 
-    // Step 2 (preview) has no validation
-
-    if (step === 3) {
+    if (step === 2) {
       if (!agreed) {
         newErrors.agreed = 'You must agree to continue'
       }
@@ -113,7 +110,7 @@ export default function PledgePage() {
   }
 
   async function handleSubmit() {
-    if (!validateStep(3)) return
+    if (!validateStep(2)) return
 
     setSubmitting(true)
     setSubmitError(null)
@@ -180,8 +177,7 @@ export default function PledgePage() {
         {currentStep === 1 && (
           <StepAmount data={formData} onChange={handleChange} errors={errors} />
         )}
-        {currentStep === 2 && <StepPreview amount={formData.amount} />}
-        {currentStep === 3 && (
+        {currentStep === 2 && (
           <StepConfirm
             data={formData}
             agreed={agreed}

@@ -47,12 +47,21 @@ export function generatePayNowString(opts: {
 }): string {
   const { amount, reference } = opts
 
+  // Expiry date: 5 years from now (YYYYMMDD)
+  const expiry = new Date()
+  expiry.setFullYear(expiry.getFullYear() + 5)
+  const expiryStr =
+    String(expiry.getFullYear()) +
+    String(expiry.getMonth() + 1).padStart(2, '0') +
+    String(expiry.getDate()).padStart(2, '0')
+
   // Merchant Account Information (Tag 26) – PayNow sub-fields
   const merchantAccount =
     tlv('00', 'SG.PAYNOW') +
     tlv('01', '2') +           // Proxy type: UEN
-    tlv('02', 'T08CC4018F') +  // Proxy value: placeholder UEN
-    tlv('03', '1')             // Amount editable: yes
+    tlv('02', 'S93MQ0024E') +   // Proxy value: UEN
+    tlv('03', '0') +           // Amount editable: no
+    tlv('04', expiryStr)       // Expiry date (YYYYMMDD)
 
   // Additional Data Field (Tag 62)
   const additionalData = tlv('01', reference) // Bill Number
@@ -67,7 +76,7 @@ export function generatePayNowString(opts: {
     tlv('54', amount.toFixed(2)) +             // Transaction Amount
     tlv('58', 'SG') +                          // Country Code
     tlv('59', 'MASJID AR-RAUDHAH') +           // Merchant Name
-    tlv('60', 'SINGAPORE') +                   // Merchant City
+    tlv('60', 'Singapore') +                   // Merchant City
     tlv('62', additionalData)                  // Additional Data Field
 
   // Tag 63 (CRC) has length 04 (the CRC itself is 4 hex chars)
