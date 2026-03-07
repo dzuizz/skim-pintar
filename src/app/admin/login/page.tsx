@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -39,19 +40,24 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-warmWhite dark:bg-gray-900 islamic-pattern px-4">
-      <div className="w-full max-w-md">
-        <Card className="shadow-lg border-0">
-          <CardContent className="pt-8 pb-8 px-8">
-            {/* Brand */}
-            <div className="text-center mb-8">
-              <h1 className="text-2xl font-bold text-primary-700 dark:text-primary-400">
-                Skim Pintar
-              </h1>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Admin Portal</p>
-            </div>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-warmWhite dark:bg-gray-900 px-4">
+      <div className="w-full max-w-sm">
+        {/* Brand */}
+        <div className="text-center mb-8">
+          <Link href="/" className="inline-block">
+            <h1 className="text-2xl font-bold text-primary-800 dark:text-primary-200">
+              Skim Pintar
+            </h1>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Masjid Ar-Raudhah</p>
+          </Link>
+        </div>
 
-            {/* Login Form */}
+        <Card>
+          <CardContent className="py-8 px-6 sm:px-8">
+            <h2 className="text-lg font-semibold text-center text-primary-800 dark:text-primary-200 mb-6">
+              Admin Sign In
+            </h2>
+
             <form onSubmit={handleSubmit} className="space-y-5">
               <Input
                 label="Email"
@@ -81,12 +87,13 @@ export default function AdminLoginPage() {
 
               <Button
                 type="submit"
+                variant="primary"
                 className="w-full"
                 size="lg"
                 disabled={loading}
               >
                 {loading ? (
-                  <span className="flex items-center gap-2">
+                  <span className="flex items-center justify-center gap-2">
                     <svg
                       className="animate-spin h-4 w-4"
                       xmlns="http://www.w3.org/2000/svg"
@@ -114,13 +121,14 @@ export default function AdminLoginPage() {
                 )}
               </Button>
             </form>
-
-            {/* Footer */}
-            <p className="text-center text-xs text-gray-400 dark:text-gray-500 mt-8">
-              Masjid Ar-Raudhah Recurring Donation Platform
-            </p>
           </CardContent>
         </Card>
+
+        <p className="text-center text-xs text-gray-400 dark:text-gray-500 mt-6">
+          <Link href="/" className="hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+            &larr; Back to Skim Pintar
+          </Link>
+        </p>
       </div>
     </div>
   )

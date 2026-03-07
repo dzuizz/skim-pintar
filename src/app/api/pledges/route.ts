@@ -11,6 +11,8 @@ interface PledgeRequestBody {
   amount: number
   frequency: 'MONTHLY' | 'QUARTERLY' | 'ANNUAL'
   reminderDay: number
+  tier: 'INDIVIDUAL' | 'FAMILY' | 'CUSTOM'
+  paymentMethod: 'MANUAL' | 'EGIRO'
 }
 
 function normalizePhone(phone: string): string {
@@ -59,8 +61,20 @@ function validateBody(body: unknown): { data: PledgeRequestBody; errors: string[
     errors.push('Invalid reminder channel')
   }
 
+  const validTiers = ['INDIVIDUAL', 'FAMILY', 'CUSTOM']
+  if (!validTiers.includes(b.tier as string)) {
+    errors.push('Invalid donation tier')
+  }
+
+  if (b.tier === 'CUSTOM' && typeof b.amount === 'number' && b.amount < 10) {
+    errors.push('Custom tier requires a minimum of $10')
+  }
+
   return {
-    data: b as unknown as PledgeRequestBody,
+    data: {
+      ...(b as unknown as PledgeRequestBody),
+      paymentMethod: b.paymentMethod === 'EGIRO' ? 'EGIRO' : 'MANUAL',
+    },
     errors,
   }
 }
@@ -133,30 +147,55 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Fetch current top 3 initiatives by admin priority
-    const { data: topInitiatives } = await supabase
-      .from('transparency_config')
-      .select('id')
-      .order('sort_order', { ascending: true })
-      .limit(3)
+    // Create the pledge (try with tier, fall back without if column missing)
+    let pledge
+    const pledgeBase = {
+      donor_id: donor.id,
+      amount: data.amount,
+      frequency: data.frequency,
+      reminder_day: data.reminderDay,
+      status: 'ACTIVE',
+    }
 
-    const initiativePriorities = (topInitiatives ?? []).map((i) => i.id)
+    // Try with all optional columns, falling back if columns don't exist
+    let pledgeInsert = { ...pledgeBase, tier: data.tier, payment_method: data.paymentMethod }
 
-    // Create the pledge
-    const { data: pledge, error: pledgeError } = await supabase
+    const { data: p1, error: e1 } = await supabase
       .from('pledges')
-      .insert({
-        donor_id: donor.id,
-        amount: data.amount,
-        frequency: data.frequency,
-        reminder_day: data.reminderDay,
-        status: 'ACTIVE',
-        initiative_priorities: initiativePriorities,
-      })
+      .insert(pledgeInsert)
       .select()
       .single()
 
-    if (pledgeError) throw pledgeError
+    if (e1 && (e1.code === 'PGRST204' || e1.code === '42703')) {
+      // Strip missing columns and retry (up to 3 times for multiple missing columns)
+      let currentInsert = { ...pledgeInsert }
+      let lastError = e1
+      for (let attempt = 0; attempt < 3; attempt++) {
+        const colMatch = lastError.message.match(/(?:find the |column \w+\.)['"]?(\w+)['"]?/)
+        if (colMatch) {
+          delete (currentInsert as Record<string, unknown>)[colMatch[1]]
+        }
+        const { data: pRetry, error: eRetry } = await supabase
+          .from('pledges')
+          .insert(currentInsert)
+          .select()
+          .single()
+        if (!eRetry) {
+          pledge = pRetry
+          break
+        }
+        if (eRetry.code === 'PGRST204' || eRetry.code === '42703') {
+          lastError = eRetry
+          continue
+        }
+        throw eRetry
+      }
+      if (!pledge) throw lastError
+    } else if (e1) {
+      throw e1
+    } else {
+      pledge = p1
+    }
 
     // Generate current cycle month (YYYY-MM)
     const now = new Date()

@@ -19,6 +19,12 @@ const channelLabels: Record<string, string> = {
   EMAIL: 'Email',
 }
 
+const tierLabels: Record<string, string> = {
+  INDIVIDUAL: 'Individual',
+  FAMILY: 'Family',
+  CUSTOM: 'Custom',
+}
+
 const dayLabels: Record<number, string> = {
   1: '1st',
   15: '15th',
@@ -59,11 +65,11 @@ export default async function PledgeSuccessPage({ searchParams }: SuccessPagePro
           </div>
           <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">Invalid Link</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            This pledge confirmation link is invalid or incomplete. Please try registering again.
+            This confirmation link is invalid or incomplete. Please try again.
           </p>
           <Link href="/pledge">
             <Button variant="primary" size="lg" className="mt-4">
-              Start a New Pledge
+              Start Donating
             </Button>
           </Link>
         </div>
@@ -86,13 +92,13 @@ export default async function PledgeSuccessPage({ searchParams }: SuccessPagePro
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
             </svg>
           </div>
-          <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">Pledge Not Found</h1>
+          <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">Donation Not Found</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            We could not find your pledge details. Please try registering again.
+            We could not find your pledge details. Please try again.
           </p>
           <Link href="/pledge">
             <Button variant="primary" size="lg" className="mt-4">
-              Start a New Pledge
+              Start Donating
             </Button>
           </Link>
         </div>
@@ -133,21 +139,27 @@ export default async function PledgeSuccessPage({ searchParams }: SuccessPagePro
             </svg>
           </div>
           <h2 className="text-2xl font-bold text-primary-800 dark:text-primary-200">
-            Alhamdulillah! Your Pledge is Confirmed
+            Alhamdulillah! Welcome to Skim Pintar
           </h2>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Your Skim Pintar Donor ID:{' '}
+            Your Donor ID:{' '}
             <span className="font-mono font-semibold text-primary-700 dark:text-primary-400">{formattedDonorId}</span>
           </p>
         </div>
 
-        {/* Pledge summary */}
+        {/* Membership summary */}
         <Card>
           <CardContent className="py-6">
             <h3 className="text-lg font-semibold text-primary-800 dark:text-primary-200 mb-4">
-              Pledge Summary
+              Donation Summary
             </h3>
             <dl className="space-y-3">
+              <div className="flex justify-between">
+                <dt className="text-sm text-gray-500 dark:text-gray-400">Tier</dt>
+                <dd className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                  {tierLabels[pledge.tier] || pledge.tier}
+                </dd>
+              </div>
               <div className="flex justify-between">
                 <dt className="text-sm text-gray-500 dark:text-gray-400">Amount</dt>
                 <dd className="text-sm font-medium text-gray-900 dark:text-gray-100">
@@ -172,17 +184,42 @@ export default async function PledgeSuccessPage({ searchParams }: SuccessPagePro
                   {channelLabels[donor.reminder_channel] || donor.reminder_channel}
                 </dd>
               </div>
+              <div className="flex justify-between">
+                <dt className="text-sm text-gray-500 dark:text-gray-400">Payment</dt>
+                <dd className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                  {pledge.payment_method === 'EGIRO' ? 'eGIRO (Auto-Debit)' : 'PayNow / Bank Transfer'}
+                </dd>
+              </div>
             </dl>
           </CardContent>
         </Card>
 
-        {/* First donation payment */}
-        <div className="space-y-3">
-          <h3 className="text-lg font-semibold text-primary-800 dark:text-primary-200 text-center">
-            Make Your First Donation Now
-          </h3>
-          <PaymentMethods amount={qrAmount} reference={qrReference} />
-        </div>
+        {/* First contribution payment */}
+        {pledge.payment_method === 'EGIRO' ? (
+          <Card>
+            <CardContent className="py-6 text-center space-y-3">
+              <div className="w-12 h-12 mx-auto rounded-full bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center">
+                <svg className="w-6 h-6 text-primary-600 dark:text-primary-400" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-primary-800 dark:text-primary-200">
+                eGIRO Auto-Debit Activated
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
+                Your bank will automatically deduct {formatCurrency(pledge.amount)} each cycle.
+                If there are insufficient funds, your bank will notify you.
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-3">
+            <h3 className="text-lg font-semibold text-primary-800 dark:text-primary-200 text-center">
+              Make Your First Contribution
+            </h3>
+            <PaymentMethods amount={qrAmount} reference={qrReference} />
+          </div>
+        )}
 
         {/* Action buttons */}
         <div className="flex flex-col sm:flex-row gap-3 pt-2">

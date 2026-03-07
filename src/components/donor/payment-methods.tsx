@@ -73,7 +73,7 @@ export function PaymentMethods({ amount, reference }: PaymentMethodsProps) {
             <div className="mt-6 rounded-lg bg-gold-50 dark:bg-gold-900/20 border border-gold-200 dark:border-gold-800 p-3">
               <p className="text-sm text-gold-800 dark:text-gold-400 leading-relaxed">
                 Please include the reference code in your transfer remarks so we
-                can match your donation to your pledge.
+                can match your contribution to your donation record.
               </p>
             </div>
           </CardContent>

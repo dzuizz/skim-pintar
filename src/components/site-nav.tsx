@@ -3,12 +3,14 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
+import { LanguageToggle } from '@/components/ui/language-toggle'
 
 export function SiteNav() {
   const pathname = usePathname()
+  const isLanding = pathname === '/'
 
   return (
-    <nav className="bg-primary-800">
+    <nav className="bg-primary-900">
       <div className="mx-auto max-w-5xl px-6 h-14 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
           <span className="text-lg font-bold text-white tracking-tight">Skim Pintar</span>
@@ -27,14 +29,15 @@ export function SiteNav() {
             <span className="hidden sm:inline">My Dashboard</span>
             <span className="sm:hidden">My</span>
           </Link>
-          {pathname !== '/pledge' && pathname !== '/' && (
+          {!isLanding && pathname !== '/pledge' && (
             <Link
               href="/pledge"
               className="text-sm font-semibold bg-gold-500 text-white px-4 py-1.5 rounded-lg hover:bg-gold-600 transition-colors"
             >
-              Pledge
+              Donate
             </Link>
           )}
+          <LanguageToggle />
           <ThemeToggle />
         </div>
       </div>

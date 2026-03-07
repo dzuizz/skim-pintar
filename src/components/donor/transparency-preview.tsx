@@ -83,7 +83,7 @@ export function TransparencyPreview({
           <p className="mt-6 text-xs text-gray-400 dark:text-gray-500 leading-relaxed border-t border-gray-100 dark:border-gray-700 pt-4">
             This breakdown is illustrative and reflects how Masjid Ar-Raudhah
             generally allocates its resources. It is not a binding allocation of
-            your specific donation. All donations support Ar-Raudhah&apos;s
+            your specific contribution. All contributions support Ar-Raudhah&apos;s
             general fund.
           </p>
         )}

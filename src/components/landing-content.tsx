@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { Card, CardContent } from '@/components/ui/card'
 import { TransparencyPreview } from '@/components/donor/transparency-preview'
-import { LanguageToggle } from '@/components/ui/language-toggle'
 import { SiteNav } from '@/components/site-nav'
 import { translations, type Locale } from '@/lib/i18n'
 
@@ -18,19 +18,33 @@ export function LandingContent({ categories }: { categories: Category[] }) {
   const [locale, setLocale] = useState<Locale>('en')
   const t = translations[locale]
 
-  const handleLocaleChange = useCallback((l: Locale) => setLocale(l), [])
+  useEffect(() => {
+    const saved = localStorage.getItem('locale') as Locale | null
+    if (saved === 'ms' || saved === 'en') setLocale(saved)
+
+    function handleLocaleChange(e: Event) {
+      setLocale((e as CustomEvent).detail as Locale)
+    }
+    window.addEventListener('locale-change', handleLocaleChange)
+    return () => window.removeEventListener('locale-change', handleLocaleChange)
+  }, [])
 
   return (
     <main className="flex flex-col min-h-screen">
       <SiteNav />
 
       {/* ========== Hero Section ========== */}
-      <section className="relative bg-primary-800">
-        <div className="absolute inset-0 islamic-pattern" />
-        <div className="absolute top-4 right-4 z-20">
-          <LanguageToggle onChange={handleLocaleChange} />
-        </div>
+      <section className="relative bg-primary-800 overflow-hidden">
+        <Image
+          src="/mosque-interior.jpg"
+          alt="Masjid Ar-Raudhah prayer hall"
+          fill
+          className="object-cover"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-primary-900/70 via-primary-800/80 to-primary-800/95 z-[1]" />
         <div className="relative z-10 mx-auto max-w-3xl px-6 py-24 text-center sm:py-32">
+          <p className="text-sm font-medium text-gold-400 uppercase tracking-wider mb-3">Masjid Ar-Raudhah</p>
           <h1 className="text-3xl font-bold leading-tight text-white sm:text-4xl md:text-5xl">
             {t.hero.title}
           </h1>
@@ -220,6 +234,12 @@ export function LandingContent({ categories }: { categories: Category[] }) {
           <p className="mt-4 text-white/60">
             {t.footer.tagline} &middot; 2026
           </p>
+          <Link
+            href="/admin"
+            className="mt-3 inline-block text-xs text-white/30 hover:text-white/60 transition-colors"
+          >
+            Admin
+          </Link>
         </div>
       </footer>
     </main>

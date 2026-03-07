@@ -12,12 +12,15 @@ interface PledgeFormData {
   customAmount: string
   frequency: 'MONTHLY' | 'QUARTERLY' | 'ANNUAL'
   reminderDay: number
+  tier: 'INDIVIDUAL' | 'FAMILY' | 'CUSTOM'
 }
 
 interface StepContactProps {
   data: PledgeFormData
   onChange: (data: Partial<PledgeFormData>) => void
   errors: Record<string, string>
+  welcomeBack?: string | null
+  onPhoneBlur?: () => void
 }
 
 const channels = [
@@ -26,9 +29,28 @@ const channels = [
   { value: 'EMAIL' as const, label: 'Email' },
 ]
 
-export function StepContact({ data, onChange, errors }: StepContactProps) {
+export function StepContact({ data, onChange, errors, welcomeBack, onPhoneBlur }: StepContactProps) {
   return (
     <div className="space-y-5">
+      {welcomeBack && (
+        <div className="rounded-lg border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20 p-3">
+          <p className="text-sm text-green-700 dark:text-green-400">
+            Welcome back, {welcomeBack}! We&apos;ve pre-filled your details.
+          </p>
+        </div>
+      )}
+
+      <Input
+        label="Mobile Number"
+        placeholder="8123 4567"
+        value={data.phone}
+        onChange={(e) => onChange({ phone: e.target.value })}
+        onBlur={onPhoneBlur}
+        error={errors.phone}
+        helperText="Singapore mobile number (8 digits)"
+        required
+      />
+
       <Input
         label="Name"
         placeholder="Your full name"
@@ -39,17 +61,7 @@ export function StepContact({ data, onChange, errors }: StepContactProps) {
       />
 
       <Input
-        label="Mobile Number"
-        placeholder="8123 4567"
-        value={data.phone}
-        onChange={(e) => onChange({ phone: e.target.value })}
-        error={errors.phone}
-        helperText="Singapore mobile number (8 digits)"
-        required
-      />
-
-      <Input
-        label="Email"
+        label="Email (Optional)"
         type="email"
         placeholder="you@example.com"
         value={data.email}
@@ -58,13 +70,13 @@ export function StepContact({ data, onChange, errors }: StepContactProps) {
       />
 
       <Input
-        label="NRIC Last 4 Digits"
+        label="NRIC Last 4 Digits (Optional)"
         placeholder="e.g. 123A"
         value={data.nricLast4}
         onChange={(e) => onChange({ nricLast4: e.target.value.slice(0, 4).toUpperCase() })}
         error={errors.nricLast4}
         maxLength={4}
-        helperText="Optional — for tax deduction receipt matching"
+        helperText="For 250% tax deduction receipt — if Ar-Raudhah is IPC registered"
       />
 
       <div className="w-full">

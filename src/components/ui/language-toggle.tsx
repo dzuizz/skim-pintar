@@ -3,32 +3,27 @@
 import { useState, useEffect } from 'react'
 import type { Locale } from '@/lib/i18n'
 
-interface LanguageToggleProps {
-  onChange: (locale: Locale) => void
-}
-
-export function LanguageToggle({ onChange }: LanguageToggleProps) {
+export function LanguageToggle() {
   const [locale, setLocale] = useState<Locale>('en')
 
   useEffect(() => {
     const saved = localStorage.getItem('locale') as Locale | null
     if (saved === 'ms' || saved === 'en') {
       setLocale(saved)
-      onChange(saved)
     }
-  }, [onChange])
+  }, [])
 
   function toggle() {
     const next: Locale = locale === 'en' ? 'ms' : 'en'
     setLocale(next)
     localStorage.setItem('locale', next)
-    onChange(next)
+    window.dispatchEvent(new CustomEvent('locale-change', { detail: next }))
   }
 
   return (
     <button
       onClick={toggle}
-      className="flex items-center gap-1.5 rounded-lg bg-white/10 backdrop-blur-sm px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-white/20"
+      className="flex items-center gap-1.5 rounded-lg bg-white/10 px-2.5 py-1.5 text-sm font-medium text-white transition-colors hover:bg-white/20"
       title={locale === 'en' ? 'Tukar ke Bahasa Melayu' : 'Switch to English'}
     >
       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">

@@ -127,7 +127,7 @@ export function QRDisplay({
 
         {/* Instruction */}
         <p className="text-center text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
-          Open your banking app and scan this QR code to complete your donation
+          Open your banking app and scan this QR code to complete your payment
         </p>
       </CardContent>
     </Card>

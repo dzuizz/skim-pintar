@@ -10,7 +10,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Skim Pintar | Masjid Ar-Raudhah",
   description:
-    "Support Ar-Raudhah's community initiatives through convenient recurring donations via PayNow",
+    "Support Ar-Raudhah's community initiatives through Skim Pintar membership via PayNow",
 };
 
 export default function RootLayout({
