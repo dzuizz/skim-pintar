@@ -100,6 +100,18 @@ export default function PledgePage() {
   const router = useRouter()
   const t = useLocale()
   const [formData, setFormData] = useState<PledgeFormData>(initialFormData)
+
+  // Pre-select tier from URL query param (e.g. /pledge?tier=FAMILY)
+  useEffect(() => {
+    const tier = new URLSearchParams(window.location.search).get('tier')
+    if (tier === 'INDIVIDUAL') {
+      setFormData(prev => ({ ...prev, tier: 'INDIVIDUAL', amount: 5 }))
+    } else if (tier === 'FAMILY') {
+      setFormData(prev => ({ ...prev, tier: 'FAMILY', amount: 20 }))
+    } else if (tier === 'CUSTOM') {
+      setFormData(prev => ({ ...prev, tier: 'CUSTOM', amount: 10, customAmount: '10' }))
+    }
+  }, [])
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [agreed, setAgreed] = useState(false)
   const [submitting, setSubmitting] = useState(false)

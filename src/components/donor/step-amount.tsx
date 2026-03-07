@@ -157,7 +157,7 @@ export function StepAmount({ data, onChange, errors }: StepAmountProps) {
                 <ul className="space-y-1.5">
                   {tier.benefits.map((benefit) => (
                     <li key={benefit} className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-                      <svg className="h-4 w-4 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                      <svg className="h-4 w-4 text-primary-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                       </svg>
                       {benefit}

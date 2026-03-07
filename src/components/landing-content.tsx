@@ -148,18 +148,21 @@ const PRICING = [
     name: 'Individual',
     price: 5,
     popular: false,
+    tier: 'INDIVIDUAL',
     features: ['Monthly impact report', 'Emergency assistance eligibility', 'Lecture series access', 'Hari Raya care package', 'Mosque library access', 'Volunteer hour tracking'],
   },
   {
     name: 'Family',
     price: 20,
     popular: true,
+    tier: 'FAMILY',
     features: ['All Individual benefits', 'Coverage for up to 5 family members', 'aLIVE programme priority', 'Raudhatul Quran discounts', 'Family event invitations', "Kids' milestone certificates", 'Sports facility booking'],
   },
   {
     name: 'Sponsor + Individual',
     price: 10,
     popular: false,
+    tier: 'CUSTOM',
     features: ['All Individual benefits for you', 'Sponsor a family in need', 'Sponsor recognition badge', 'Extra sadaqah jariyah credit', 'Community appreciation mention'],
   },
 ]
@@ -385,9 +388,9 @@ export function LandingContent() {
           </div>
 
           {/* Benefits grid */}
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div key={activeTab} className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 tab-enter">
             {tabData.benefits.map((b, i) => (
-              <div key={`${activeTab}-${i}`} className="reveal reveal-scale bg-white border border-gray-100 rounded-2xl p-6 card-hover">
+              <div key={i} className="bg-white border border-gray-100 rounded-2xl p-6 card-hover">
                 <div className="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center text-primary-700 mb-4">
                   <Icon name={b.icon} className="w-5 h-5" />
                 </div>
@@ -467,7 +470,7 @@ export function LandingContent() {
                     ))}
                   </ul>
                   <Link
-                    href="/pledge"
+                    href={`/pledge?tier=${plan.tier}`}
                     className={`mt-8 block text-center py-3 rounded-xl text-sm font-semibold transition-all ${
                       plan.popular
                         ? 'bg-white text-primary-800 hover:bg-primary-50 shadow-lg'
