@@ -1,26 +1,72 @@
 @import "tailwindcss";
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@config "../../tailwind.config.ts";
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-primary-50: #E8F5E9;
+  --color-primary-100: #C8E6C9;
+  --color-primary-200: #A5D6A7;
+  --color-primary-300: #81C784;
+  --color-primary-400: #66BB6A;
+  --color-primary-500: #43A047;
+  --color-primary-600: #2E7D32;
+  --color-primary-700: #1B5E20;
+  --color-primary-800: #145218;
+  --color-primary-900: #0D3B10;
+
+  --color-gold-50: #FFF8E1;
+  --color-gold-100: #FFECB3;
+  --color-gold-200: #FFE082;
+  --color-gold-300: #FFD54F;
+  --color-gold-400: #FFCA28;
+  --color-gold-500: #D4A843;
+  --color-gold-600: #C49A38;
+  --color-gold-700: #A67C28;
+  --color-gold-800: #8B6914;
+  --color-gold-900: #6D5010;
+
+  --color-cream: #FDF8F0;
+  --color-warmWhite: #FAFAF5;
+
+  --font-sans: var(--font-inter);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: #FAFAF5;
+  color: #1a1a1a;
+}
+
+.islamic-pattern {
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      rgba(27, 94, 32, 0.03) 0px,
+      rgba(27, 94, 32, 0.03) 1px,
+      transparent 1px,
+      transparent 12px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      rgba(27, 94, 32, 0.03) 0px,
+      rgba(27, 94, 32, 0.03) 1px,
+      transparent 1px,
+      transparent 12px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(27, 94, 32, 0.02) 0px,
+      rgba(27, 94, 32, 0.02) 1px,
+      transparent 1px,
+      transparent 24px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      rgba(27, 94, 32, 0.02) 0px,
+      rgba(27, 94, 32, 0.02) 1px,
+      transparent 1px,
+      transparent 24px
+    );
 }
