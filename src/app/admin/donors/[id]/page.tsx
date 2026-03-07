@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { prisma } from '@/lib/db'
+import { supabase } from '@/lib/supabase'
 import { formatCurrency } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import { PledgeActions, MarkReceivedButton } from '@/components/admin/donor-actions'
 import { QRDisplay } from '@/components/donor/qr-display'
 
-function formatDate(date: Date): string {
+function formatDate(date: string): string {
   return new Date(date).toLocaleDateString('en-SG', {
     day: 'numeric',
     month: 'short',
@@ -87,35 +87,32 @@ export default async function AdminDonorDetailPage({ params }: DonorDetailPagePr
     notFound()
   }
 
-  const donor = await prisma.donor.findUnique({
-    where: { id: donorId },
-    include: {
-      pledges: {
-        orderBy: { createdAt: 'desc' },
-      },
-      donations: {
-        orderBy: { cycleMonth: 'desc' },
-        include: {
-          pledge: {
-            select: { amount: true, frequency: true },
-          },
-        },
-      },
-    },
-  })
+  const { data: donor, error } = await supabase
+    .from('donors')
+    .select('*, pledges(*), donations(*)')
+    .eq('id', donorId)
+    .single()
 
-  if (!donor) {
+  if (error || !donor) {
     notFound()
   }
 
-  const activePledge = donor.pledges.find((p) => p.status === 'ACTIVE')
-  const latestPledge = donor.pledges[0] || null
+  // Sort pledges and donations
+  const pledges = (donor.pledges ?? []).sort((a: { created_at: string }, b: { created_at: string }) =>
+    b.created_at.localeCompare(a.created_at),
+  )
+  const donations = (donor.donations ?? []).sort((a: { cycle_month: string }, b: { cycle_month: string }) =>
+    b.cycle_month.localeCompare(a.cycle_month),
+  )
+
+  const activePledge = pledges.find((p: { status: string }) => p.status === 'ACTIVE')
+  const latestPledge = pledges[0] || null
 
   // Find current month's pending donation for QR display
   const now = new Date()
   const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
-  const currentDonation = donor.donations.find(
-    (d) => d.cycleMonth === currentMonth && d.status === 'PENDING',
+  const currentDonation = donations.find(
+    (d: { cycle_month: string; status: string }) => d.cycle_month === currentMonth && d.status === 'PENDING',
   )
 
   return (
@@ -163,13 +160,13 @@ export default async function AdminDonorDetailPage({ params }: DonorDetailPagePr
                 <dd className="mt-1 text-sm text-gray-900">{donor.email}</dd>
               </div>
             )}
-            {donor.nricLast4 && (
+            {donor.nric_last4 && (
               <div>
                 <dt className="text-xs font-medium text-gray-500 uppercase tracking-wider">
                   NRIC (last 4)
                 </dt>
                 <dd className="mt-1 text-sm text-gray-900 font-mono">
-                  ****{donor.nricLast4}
+                  ****{donor.nric_last4}
                 </dd>
               </div>
             )}
@@ -177,13 +174,13 @@ export default async function AdminDonorDetailPage({ params }: DonorDetailPagePr
               <dt className="text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Reminder Channel
               </dt>
-              <dd className="mt-1 text-sm text-gray-900">{donor.reminderChannel}</dd>
+              <dd className="mt-1 text-sm text-gray-900">{donor.reminder_channel}</dd>
             </div>
             <div>
               <dt className="text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Joined
               </dt>
-              <dd className="mt-1 text-sm text-gray-900">{formatDate(donor.createdAt)}</dd>
+              <dd className="mt-1 text-sm text-gray-900">{formatDate(donor.created_at)}</dd>
             </div>
           </dl>
         </CardContent>
@@ -223,7 +220,7 @@ export default async function AdminDonorDetailPage({ params }: DonorDetailPagePr
                   Reminder Day
                 </dt>
                 <dd className="mt-1 text-sm text-gray-900">
-                  {reminderDayLabel(latestPledge.reminderDay)}
+                  {reminderDayLabel(latestPledge.reminder_day)}
                 </dd>
               </div>
             </dl>
@@ -264,7 +261,7 @@ export default async function AdminDonorDetailPage({ params }: DonorDetailPagePr
           <CardTitle>Donation History</CardTitle>
         </CardHeader>
         <CardContent>
-          {donor.donations.length === 0 ? (
+          {donations.length === 0 ? (
             <p className="text-center text-sm text-gray-500 py-4">
               No donation records yet.
             </p>
@@ -293,10 +290,10 @@ export default async function AdminDonorDetailPage({ params }: DonorDetailPagePr
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-50">
-                    {donor.donations.map((donation) => (
+                    {donations.map((donation: { id: number; cycle_month: string; amount: number; reference: string; status: string }) => (
                       <tr key={donation.id}>
                         <td className="py-3 text-sm text-gray-900">
-                          {formatMonth(donation.cycleMonth)}
+                          {formatMonth(donation.cycle_month)}
                         </td>
                         <td className="py-3 text-sm text-gray-900 font-medium">
                           {formatCurrency(donation.amount)}
@@ -324,14 +321,14 @@ export default async function AdminDonorDetailPage({ params }: DonorDetailPagePr
 
               {/* Mobile cards */}
               <div className="md:hidden space-y-3">
-                {donor.donations.map((donation) => (
+                {donations.map((donation: { id: number; cycle_month: string; amount: number; reference: string; status: string }) => (
                   <div
                     key={donation.id}
                     className="border border-gray-100 rounded-lg p-4"
                   >
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm font-medium text-gray-900">
-                        {formatMonth(donation.cycleMonth)}
+                        {formatMonth(donation.cycle_month)}
                       </span>
                       <Badge variant={donationStatusVariant(donation.status)}>
                         {donation.status}

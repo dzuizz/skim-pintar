@@ -1,6 +1,6 @@
 export const dynamic = 'force-dynamic'
 
-import { prisma } from '@/lib/db'
+import { supabase } from '@/lib/supabase'
 import { formatCurrency } from '@/lib/utils'
 import { StatCard } from '@/components/admin/stat-card'
 import { ActivityList, type ActivityItem } from '@/components/admin/activity-list'
@@ -90,83 +90,72 @@ export default async function AdminDashboardPage() {
   // --- Stats queries ---
 
   // 1. Active Donors: donors with at least one ACTIVE pledge
-  const activeDonorCount = await prisma.donor.count({
-    where: {
-      pledges: {
-        some: { status: 'ACTIVE' },
-      },
-    },
-  })
+  const { data: activeDonors } = await supabase
+    .from('donors')
+    .select('id, pledges!inner(status)')
+    .eq('pledges.status', 'ACTIVE')
+
+  const activeDonorCount = activeDonors?.length ?? 0
 
   // 2. Pledged / Month: sum of amounts from all ACTIVE pledges
-  const activePledges = await prisma.pledge.findMany({
-    where: { status: 'ACTIVE' },
-    select: { amount: true },
-  })
-  const pledgedPerMonth = activePledges.reduce((sum, p) => sum + p.amount, 0)
+  const { data: activePledges } = await supabase
+    .from('pledges')
+    .select('amount')
+    .eq('status', 'ACTIVE')
+
+  const pledgedPerMonth = (activePledges ?? []).reduce((sum, p) => sum + Number(p.amount), 0)
 
   // 3. Fulfilment Rate for current month
-  const currentMonthDonations = await prisma.donation.findMany({
-    where: { cycleMonth: currentMonth },
-    select: { status: true },
-  })
-  const receivedCount = currentMonthDonations.filter(
+  const { data: currentMonthDonations } = await supabase
+    .from('donations')
+    .select('status, amount')
+    .eq('cycle_month', currentMonth)
+
+  const receivedCount = (currentMonthDonations ?? []).filter(
     (d) => d.status === 'RECEIVED',
   ).length
-  const totalCount = currentMonthDonations.filter(
+  const totalCount = (currentMonthDonations ?? []).filter(
     (d) => d.status === 'RECEIVED' || d.status === 'PENDING',
   ).length
   const fulfilmentRate =
     totalCount > 0 ? Math.round((receivedCount / totalCount) * 100) : 0
 
   // 4. Received This Month: sum of amounts for RECEIVED donations in current month
-  const receivedDonations = await prisma.donation.findMany({
-    where: {
-      cycleMonth: currentMonth,
-      status: 'RECEIVED',
-    },
-    select: { amount: true },
-  })
-  const receivedThisMonth = receivedDonations.reduce(
-    (sum, d) => sum + d.amount,
-    0,
-  )
+  const receivedThisMonth = (currentMonthDonations ?? [])
+    .filter((d) => d.status === 'RECEIVED')
+    .reduce((sum, d) => sum + Number(d.amount), 0)
 
   // --- Recent Activity ---
 
-  const recentPledges = await prisma.pledge.findMany({
-    orderBy: { createdAt: 'desc' },
-    take: 10,
-    include: {
-      donor: { select: { name: true } },
-    },
-  })
+  const { data: recentPledges } = await supabase
+    .from('pledges')
+    .select('*, donors(name)')
+    .order('created_at', { ascending: false })
+    .limit(10)
 
-  const recentReceivedDonations = await prisma.donation.findMany({
-    where: { status: 'RECEIVED' },
-    orderBy: { receivedAt: 'desc' },
-    take: 10,
-    include: {
-      donor: { select: { name: true } },
-    },
-  })
+  const { data: recentReceivedDonations } = await supabase
+    .from('donations')
+    .select('*, donors(name)')
+    .eq('status', 'RECEIVED')
+    .order('received_at', { ascending: false })
+    .limit(10)
 
   // Combine and sort by date, take last 10
   const activityItems: ActivityItem[] = [
-    ...recentPledges.map((p) => ({
+    ...(recentPledges ?? []).map((p) => ({
       id: `pledge-${p.id}`,
       type: 'pledge' as const,
-      description: `${p.donor.name} pledged ${formatCurrency(p.amount)}/month`,
-      time: p.createdAt,
+      description: `${(p.donors as unknown as { name: string })?.name} pledged ${formatCurrency(Number(p.amount))}/month`,
+      time: p.created_at,
     })),
-    ...recentReceivedDonations.map((d) => ({
+    ...(recentReceivedDonations ?? []).map((d) => ({
       id: `donation-${d.id}`,
       type: 'donation' as const,
-      description: `${d.donor.name} donated ${formatCurrency(d.amount)} for ${formatMonth(d.cycleMonth)}`,
-      time: d.receivedAt ?? d.createdAt,
+      description: `${(d.donors as unknown as { name: string })?.name} donated ${formatCurrency(Number(d.amount))} for ${formatMonth(d.cycle_month)}`,
+      time: d.received_at ?? d.created_at,
     })),
   ]
-    .sort((a, b) => b.time.getTime() - a.time.getTime())
+    .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
     .slice(0, 10)
 
   return (

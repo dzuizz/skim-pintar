@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { prisma } from '@/lib/db'
+import { supabase } from '@/lib/supabase'
 import { generateReference } from '@/lib/paynow-qr'
 import { formatCurrency } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -56,10 +56,10 @@ export default async function PledgeSuccessPage({ searchParams }: SuccessPagePro
     )
   }
 
-  const donor = await prisma.donor.findUnique({ where: { id: donorId } })
-  const pledge = await prisma.pledge.findUnique({ where: { id: pledgeId } })
+  const { data: donor } = await supabase.from('donors').select().eq('id', donorId).single()
+  const { data: pledge } = await supabase.from('pledges').select().eq('id', pledgeId).single()
 
-  if (!donor || !pledge || pledge.donorId !== donorId) {
+  if (!donor || !pledge || pledge.donor_id !== donorId) {
     return (
       <main className="min-h-screen bg-warmWhite flex items-center justify-center px-6">
         <div className="text-center space-y-4 max-w-md">
@@ -83,10 +83,14 @@ export default async function PledgeSuccessPage({ searchParams }: SuccessPagePro
   }
 
   // Find the first pending donation for this pledge
-  const pendingDonation = await prisma.donation.findFirst({
-    where: { pledgeId: pledge.id, status: 'PENDING' },
-    orderBy: { cycleMonth: 'asc' },
-  })
+  const { data: pendingDonation } = await supabase
+    .from('donations')
+    .select()
+    .eq('pledge_id', pledge.id)
+    .eq('status', 'PENDING')
+    .order('cycle_month')
+    .limit(1)
+    .maybeSingle()
 
   const formattedDonorId = `SP-${String(donor.id).padStart(4, '0')}`
 
@@ -150,13 +154,13 @@ export default async function PledgeSuccessPage({ searchParams }: SuccessPagePro
               <div className="flex justify-between">
                 <dt className="text-sm text-gray-500">Reminder Day</dt>
                 <dd className="text-sm font-medium text-gray-900">
-                  {dayLabels[pledge.reminderDay] || `${pledge.reminderDay}th`} of the month
+                  {dayLabels[pledge.reminder_day] || `${pledge.reminder_day}th`} of the month
                 </dd>
               </div>
               <div className="flex justify-between">
                 <dt className="text-sm text-gray-500">Reminder Via</dt>
                 <dd className="text-sm font-medium text-gray-900">
-                  {channelLabels[donor.reminderChannel] || donor.reminderChannel}
+                  {channelLabels[donor.reminder_channel] || donor.reminder_channel}
                 </dd>
               </div>
             </dl>

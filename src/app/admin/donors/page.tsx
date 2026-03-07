@@ -1,13 +1,13 @@
 export const dynamic = 'force-dynamic'
 
 import Link from 'next/link'
-import { prisma } from '@/lib/db'
+import { supabase } from '@/lib/supabase'
 import { formatCurrency } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { DonorFilters } from '@/components/admin/donor-filters'
 
-function formatDate(date: Date): string {
+function formatDate(date: string): string {
   return new Date(date).toLocaleDateString('en-SG', {
     day: 'numeric',
     month: 'short',
@@ -50,33 +50,37 @@ interface DonorsPageProps {
 export default async function AdminDonorsPage({ searchParams }: DonorsPageProps) {
   const { search, status } = await searchParams
 
-  // Build query filter
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const where: any = {}
+  let query = supabase
+    .from('donors')
+    .select('*, pledges(*)')
+    .order('created_at', { ascending: false })
 
   if (search) {
-    where.OR = [
-      { name: { contains: search } },
-      { phone: { contains: search } },
-    ]
+    query = query.or(`name.ilike.%${search}%,phone.ilike.%${search}%`)
   }
 
+  const { data, error } = await query
+
+  if (error) throw error
+
+  let donors = data ?? []
+
+  // Filter by pledge status in JS
   if (status) {
-    where.pledges = {
-      some: { status },
-    }
+    donors = donors.filter((d) =>
+      d.pledges?.some((p: { status: string }) => p.status === status),
+    )
   }
 
-  const donors = await prisma.donor.findMany({
-    where,
-    include: {
-      pledges: {
-        orderBy: { createdAt: 'desc' },
-        take: 1,
-      },
-    },
-    orderBy: { createdAt: 'desc' },
-  })
+  // Trim pledges to only the most recent one
+  donors = donors.map((d) => ({
+    ...d,
+    pledges: d.pledges
+      ?.sort((a: { created_at: string }, b: { created_at: string }) =>
+        b.created_at.localeCompare(a.created_at),
+      )
+      .slice(0, 1),
+  }))
 
   const totalCount = donors.length
 
@@ -153,7 +157,7 @@ export default async function AdminDonorsPage({ searchParams }: DonorsPageProps)
                         )}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-500">
-                        {formatDate(donor.createdAt)}
+                        {formatDate(donor.created_at)}
                       </td>
                     </tr>
                   )
@@ -208,7 +212,7 @@ export default async function AdminDonorsPage({ searchParams }: DonorsPageProps)
                         : 'No active pledge'}
                     </span>
                     <span className="text-xs text-gray-400">
-                      {formatDate(donor.createdAt)}
+                      {formatDate(donor.created_at)}
                     </span>
                   </div>
                 </CardContent>
