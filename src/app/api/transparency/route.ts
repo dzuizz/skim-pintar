@@ -1,17 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
+import { supabase } from '@/lib/supabase'
 
 export async function GET() {
-  const configs = await prisma.transparencyConfig.findMany({
-    orderBy: { sortOrder: 'asc' },
-  })
+  const { data, error } = await supabase
+    .from('transparency_config')
+    .select('id, category, percentage, description, sort_order')
+    .order('sort_order', { ascending: true })
 
-  const categories = configs.map((c) => ({
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  const categories = (data ?? []).map((c) => ({
     id: c.id,
     category: c.category,
     percentage: c.percentage,
     description: c.description,
-    sortOrder: c.sortOrder,
+    sortOrder: c.sort_order,
   }))
 
   return NextResponse.json(categories)
@@ -61,34 +64,30 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    // Update all categories in a transaction
-    const updated = await prisma.$transaction(async (tx) => {
-      // Delete existing categories
-      await tx.transparencyConfig.deleteMany()
+    // Delete all existing
+    await supabase.from('transparency_config').delete().neq('id', 0)
 
-      // Create new categories
-      const results = []
-      for (let i = 0; i < categories.length; i++) {
-        const cat = categories[i]
-        const created = await tx.transparencyConfig.create({
-          data: {
-            category: cat.category.trim(),
-            percentage: cat.percentage,
-            description: cat.description.trim(),
-            sortOrder: cat.sortOrder ?? i,
-          },
-        })
-        results.push(created)
-      }
-      return results
-    })
+    // Insert new ones
+    const { data: updated, error: insertError } = await supabase
+      .from('transparency_config')
+      .insert(categories.map((cat, i) => ({
+        category: cat.category.trim(),
+        percentage: cat.percentage,
+        description: cat.description.trim(),
+        sort_order: cat.sortOrder ?? i,
+      })))
+      .select()
 
-    const result = updated.map((c) => ({
+    if (insertError) {
+      return NextResponse.json({ error: insertError.message }, { status: 500 })
+    }
+
+    const result = (updated ?? []).map((c) => ({
       id: c.id,
       category: c.category,
       percentage: c.percentage,
       description: c.description,
-      sortOrder: c.sortOrder,
+      sortOrder: c.sort_order,
     }))
 
     return NextResponse.json(result)

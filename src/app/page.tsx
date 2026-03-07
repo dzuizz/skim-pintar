@@ -1,14 +1,15 @@
 import Link from 'next/link'
-import { prisma } from '@/lib/db'
+import { supabase } from '@/lib/supabase'
 import { Card, CardContent } from '@/components/ui/card'
 import { TransparencyPreview } from '@/components/donor/transparency-preview'
 
 export default async function Home() {
-  const transparencyData = await prisma.transparencyConfig.findMany({
-    orderBy: { sortOrder: 'asc' },
-  })
+  const { data: transparencyData } = await supabase
+    .from('transparency_config')
+    .select('category, percentage, description')
+    .order('sort_order', { ascending: true })
 
-  const categories = transparencyData.map((t) => ({
+  const categories = (transparencyData ?? []).map((t) => ({
     category: t.category,
     percentage: t.percentage,
     description: t.description,
