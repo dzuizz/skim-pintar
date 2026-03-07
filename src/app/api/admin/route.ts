@@ -1,18 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
+import { supabase } from '@/lib/supabase'
 import bcrypt from 'bcryptjs'
 
 export async function GET() {
   try {
-    const admins = await prisma.admin.findMany({
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        createdAt: true,
-      },
-      orderBy: { createdAt: 'desc' },
-    })
+    const { data: admins, error } = await supabase
+      .from('admins')
+      .select('id, name, email, created_at')
+      .order('created_at', { ascending: false })
+
+    if (error) throw error
 
     return NextResponse.json({ admins })
   } catch (error) {
@@ -52,9 +49,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Check for duplicate email
-    const existing = await prisma.admin.findUnique({
-      where: { email: email.trim().toLowerCase() },
-    })
+    const { data: existing } = await supabase
+      .from('admins')
+      .select('id')
+      .eq('email', email.trim().toLowerCase())
+      .maybeSingle()
 
     if (existing) {
       return NextResponse.json(
@@ -66,19 +65,17 @@ export async function POST(request: NextRequest) {
     // Hash password and create admin
     const passwordHash = await bcrypt.hash(password, 10)
 
-    const admin = await prisma.admin.create({
-      data: {
+    const { data: admin, error: createError } = await supabase
+      .from('admins')
+      .insert({
         name: name.trim(),
         email: email.trim().toLowerCase(),
-        passwordHash,
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        createdAt: true,
-      },
-    })
+        password_hash: passwordHash,
+      })
+      .select('id, name, email, created_at')
+      .single()
+
+    if (createError) throw createError
 
     return NextResponse.json({ admin }, { status: 201 })
   } catch (error) {

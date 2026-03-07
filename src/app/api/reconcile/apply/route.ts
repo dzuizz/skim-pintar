@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
+import { supabase } from '@/lib/supabase'
 
 export async function POST(request: NextRequest) {
   try {
@@ -21,22 +21,17 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const now = new Date()
+    const { data, error } = await supabase
+      .from('donations')
+      .update({ status: 'RECEIVED', received_at: new Date().toISOString() })
+      .in('id', matchedIds)
+      .eq('status', 'PENDING')
+      .select()
 
-    // Update all specified donations to RECEIVED
-    const updateResult = await prisma.donation.updateMany({
-      where: {
-        id: { in: matchedIds },
-        status: 'PENDING',
-      },
-      data: {
-        status: 'RECEIVED',
-        receivedAt: now,
-      },
-    })
+    if (error) throw error
 
     return NextResponse.json({
-      updated: updateResult.count,
+      updated: data?.length ?? 0,
       total: matchedIds.length,
     })
   } catch (error) {

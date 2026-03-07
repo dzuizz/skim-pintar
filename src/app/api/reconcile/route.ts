@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
+import { supabase } from '@/lib/supabase'
 import { parseCSV, matchPayments } from '@/lib/reconcile'
 
 export async function POST(request: NextRequest) {
@@ -42,21 +42,19 @@ export async function POST(request: NextRequest) {
     }
 
     // Fetch pending donations for the specified month
-    const pendingDonations = await prisma.donation.findMany({
-      where: {
-        cycleMonth: month,
-        status: 'PENDING',
-      },
-      include: {
-        donor: { select: { name: true } },
-      },
-    })
+    const { data: pendingDonations, error } = await supabase
+      .from('donations')
+      .select('id, reference, amount, donors(name)')
+      .eq('cycle_month', month)
+      .eq('status', 'PENDING')
 
-    const pendingForMatching = pendingDonations.map((d) => ({
+    if (error) throw error
+
+    const pendingForMatching = (pendingDonations ?? []).map((d) => ({
       id: d.id,
       reference: d.reference,
       amount: d.amount,
-      donorName: d.donor.name,
+      donorName: (d.donors as unknown as { name: string })?.name ?? '',
     }))
 
     const result = matchPayments(bankRows, pendingForMatching)
