@@ -90,6 +90,7 @@ export function QRDisplay({
             </div>
           ) : (
             <div className="bg-white border border-gray-200 rounded-lg p-3">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={qrDataURL!}
                 alt="PayNow QR Code"

@@ -42,8 +42,6 @@ const reminderDayOptions = [
 ]
 
 export function StepAmount({ data, onChange, errors }: StepAmountProps) {
-  const isCustom = data.customAmount !== '' || !presets.some((p) => p.amount === data.amount)
-
   function selectPreset(amount: number) {
     onChange({ amount, customAmount: '' })
   }
