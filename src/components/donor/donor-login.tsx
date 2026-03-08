@@ -1,10 +1,49 @@
 'use client'
 
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { useLocale } from '@/lib/use-locale'
+
+interface GiroData {
+  donor: {
+    id: number
+    fullName: string
+    phone: string
+    email: string | null
+    address: string | null
+    postalCode: string | null
+    membershipNo: string | null
+    tier: string | null
+    monthlyAmount: number | null
+    giroStatus: string
+    bankName: string | null
+    remarks: string | null
+    status: string | null
+    submittedToBankAt: string | null
+    bankVerifiedAt: string | null
+    firstDeductionAt: string | null
+    activatedAt: string | null
+    updatedAt: string | null
+    trackingUrl: string
+  }
+  dependants: {
+    id: number
+    fullName: string
+    relationship: string
+    phone: string | null
+    address: string | null
+  }[]
+  tracking: {
+    id: number
+    phase: string
+    detail: string | null
+    createdAt: string
+  }[]
+  currentPhaseSince: string | null
+  currentPhaseDays: number
+}
 
 interface DonorData {
   donor: {
@@ -46,25 +85,30 @@ interface DonorData {
     relationship: string
     nric_last4: string | null
   }[]
+  giro: GiroData | null
+  lookupSource: 'paynow' | 'giro' | 'hybrid'
+  hasPayNowRecord: boolean
+  hasGiroRecord: boolean
 }
 
 interface DonorLoginProps {
   onLogin: (data: DonorData) => void
+  initialPhone?: string
 }
 
 export type { DonorData }
 
-export function DonorLogin({ onLogin }: DonorLoginProps) {
+export function DonorLogin({ onLogin, initialPhone = '' }: DonorLoginProps) {
   const t = useLocale()
-  const [phone, setPhone] = useState('')
+  const [phone, setPhone] = useState(initialPhone)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [autoSubmitted, setAutoSubmitted] = useState(false)
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
+  const submitLookup = useCallback(async (phoneValue: string) => {
     setError(null)
 
-    if (!phone.trim()) {
+    if (!phoneValue.trim()) {
       setError(t.donor.phoneRequired)
       return
     }
@@ -75,7 +119,7 @@ export function DonorLogin({ onLogin }: DonorLoginProps) {
       const res = await fetch('/api/donors/lookup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: phone.trim() }),
+        body: JSON.stringify({ phone: phoneValue.trim() }),
       })
 
       const data = await res.json()
@@ -91,6 +135,18 @@ export function DonorLogin({ onLogin }: DonorLoginProps) {
     } finally {
       setLoading(false)
     }
+  }, [onLogin, t])
+
+  useEffect(() => {
+    if (!initialPhone || autoSubmitted) return
+    setPhone(initialPhone)
+    setAutoSubmitted(true)
+    submitLookup(initialPhone)
+  }, [autoSubmitted, initialPhone, submitLookup])
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    await submitLookup(phone)
   }
 
   return (
