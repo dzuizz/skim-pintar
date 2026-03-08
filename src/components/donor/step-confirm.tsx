@@ -137,7 +137,7 @@ export function StepConfirm({ data, agreed, onAgreeChange }: StepConfirmProps) {
         <TransparencyPreview amount={data.amount} categories={topCategories} />
       )}
 
-      <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-4">
+      <div className="rounded border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-4">
         <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
           By confirming, you are making a voluntary pledge to donate regularly to
           Masjid Ar-Raudhah. This is not a binding contract — you can pause or

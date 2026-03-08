@@ -109,7 +109,7 @@ export function DependantsList({ donorId, tier }: DependantsListProps) {
             {dependants.length > 0 && (
               <div className="space-y-2">
                 {dependants.map((dep) => (
-                  <div key={dep.id} className="flex items-center justify-between rounded-lg border border-gray-100 dark:border-gray-700 p-3">
+                  <div key={dep.id} className="flex items-center justify-between rounded border border-gray-100 dark:border-gray-700 p-3">
                     <div>
                       <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{dep.name}</p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">{dep.relationship}</p>
@@ -134,7 +134,7 @@ export function DependantsList({ donorId, tier }: DependantsListProps) {
             )}
 
             {adding && (
-              <div className="mt-3 space-y-3 rounded-lg border border-gray-200 dark:border-gray-700 p-3">
+              <div className="mt-3 space-y-3 rounded border border-gray-200 dark:border-gray-700 p-3">
                 <Input label={t.dashboard.name} value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} />
                 <Input label={t.dashboard.relationship} placeholder="e.g. Spouse, Child, Parent" value={form.relationship} onChange={(e) => setForm((f) => ({ ...f, relationship: e.target.value }))} />
                 <Input label={t.dashboard.nricLast4} value={form.nricLast4} onChange={(e) => setForm((f) => ({ ...f, nricLast4: e.target.value }))} />

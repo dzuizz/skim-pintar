@@ -36,7 +36,7 @@ export function StepContact({ data, onChange, errors, welcomeBack, onPhoneBlur }
   return (
     <div className="space-y-5">
       {welcomeBack && (
-        <div className="rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 p-3">
+        <div className="rounded border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 p-3">
           <p className="text-sm text-amber-700 dark:text-amber-400">
             {t.pledge.existingMember}{' '}
             <a href="/my" className="font-medium underline hover:text-amber-800 dark:hover:text-amber-300">
@@ -76,16 +76,6 @@ export function StepContact({ data, onChange, errors, welcomeBack, onPhoneBlur }
         error={errors.email}
       />
 
-      <Input
-        label={t.pledge.nricLabel}
-        placeholder={t.pledge.nricPlaceholder}
-        value={data.nricLast4}
-        onChange={(e) => onChange({ nricLast4: e.target.value.slice(0, 4).toUpperCase() })}
-        error={errors.nricLast4}
-        maxLength={4}
-        helperText={t.pledge.nricHelper}
-      />
-
       <div className="w-full">
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
           {t.pledge.preferredReminder}
@@ -94,7 +84,7 @@ export function StepContact({ data, onChange, errors, welcomeBack, onPhoneBlur }
           {channels.map((channel) => (
             <label
               key={channel.value}
-              className={`flex items-center gap-2 cursor-pointer rounded-lg border px-4 py-2.5 text-sm transition-colors ${
+              className={`flex items-center gap-2 cursor-pointer rounded border px-4 py-2.5 text-sm transition-colors ${
                 data.reminderChannel === channel.value
                   ? 'border-gold-500 bg-gold-50 dark:bg-gold-900/20 text-gold-700 dark:text-gold-400'
                   : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-gray-400'

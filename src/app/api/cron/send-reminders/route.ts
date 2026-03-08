@@ -1,15 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 import { supabase } from '@/lib/supabase'
+import { generateMessage, type NotificationType } from '@/lib/notifications'
 
 export async function POST(request: NextRequest) {
   try {
+    // Accept either CRON_SECRET (for cron jobs) or admin session (for dashboard)
     const authHeader = request.headers.get('authorization')
     const cronSecret = process.env.CRON_SECRET
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const hasCronAuth = !cronSecret || authHeader === `Bearer ${cronSecret}`
+
+    if (!hasCronAuth) {
+      const session = await getServerSession(authOptions)
+      if (!session) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      }
     }
 
-    // Check if specific donor_id was passed (for admin manual trigger)
+    // Optional: target a specific donor (for admin manual trigger)
     const body = await request.json().catch(() => ({}))
     const targetDonorId = (body as { donorId?: number }).donorId
 
@@ -32,6 +41,7 @@ export async function POST(request: NextRequest) {
 
     const channels = { whatsapp: 0, sms: 0, email: 0 }
     let sent = 0
+    const messages: { donorName: string; channel: string; stage: number; message: string }[] = []
 
     for (const pledge of pledges ?? []) {
       const donor = pledge.donors as unknown as { id: number; name: string; phone: string; email: string | null; reminder_channel: string }
@@ -47,48 +57,59 @@ export async function POST(request: NextRequest) {
 
       if (donation?.status === 'RECEIVED') continue
 
-      // Determine stage and message
-      let stage = 1
-      let message = ''
+      // Determine notification type
       const missedCount = pledge.missed_count || 0
+      let notificationType: NotificationType | null = null
+      let stage = 1
 
+      // For admin-triggered (specific donor), always generate a message
       if (missedCount >= 2) {
         stage = 3
-        const deadline = pledge.grace_deadline
-          ? new Date(pledge.grace_deadline).toLocaleDateString('en-SG', { day: 'numeric', month: 'long' })
-          : 'soon'
-        message = `Assalamualaikum ${donor.name}, your Skim Pintar membership may lapse on ${deadline}. Please make your payment of $${pledge.amount} to stay covered. PayNow to UEN S93MQ0024E.`
+        notificationType = 'GRACE_WARNING'
       } else if (missedCount === 1) {
         stage = 2
-        message = `Assalamualaikum ${donor.name}, we noticed your Skim Pintar payment of $${pledge.amount} for this month hasn't arrived. Need any help? PayNow to UEN S93MQ0024E.`
-      } else if (today >= pledge.reminder_day - 3 && today <= pledge.reminder_day) {
+        notificationType = 'PAYMENT_MISSED'
+      } else if (targetDonorId || (today >= pledge.reminder_day - 3 && today <= pledge.reminder_day)) {
         stage = 1
-        message = `Assalamualaikum ${donor.name}, friendly reminder: your Skim Pintar contribution of $${pledge.amount} is due on the ${pledge.reminder_day}th. PayNow to UEN S93MQ0024E. JazakAllahu Khairan.`
+        notificationType = 'REMINDER_UPCOMING'
       } else {
-        continue // Not due for a reminder
+        continue
       }
 
-      // Log to reminder_log
+      const channel = (donor.reminder_channel || 'WHATSAPP').toUpperCase() as 'WHATSAPP' | 'SMS' | 'EMAIL'
+
+      const message = generateMessage({
+        donorId: donor.id,
+        donorName: donor.name,
+        phone: donor.phone,
+        email: donor.email,
+        channel,
+        type: notificationType,
+        amount: pledge.amount,
+        missedCount,
+        graceDeadline: pledge.grace_deadline,
+      })
+
+      // Log to reminder_log for admin to review and send manually
       try {
         await supabase.from('reminder_log').insert({
           donor_id: donor.id,
           pledge_id: pledge.id,
-          channel: donor.reminder_channel,
+          channel,
           stage,
           message,
         })
       } catch { /* table may not exist */ }
 
-      console.log(`[REMINDER] Stage ${stage} via ${donor.reminder_channel} to ${donor.name}: ${message.slice(0, 80)}...`)
+      console.log(`[REMINDER] Stage ${stage} via ${channel} to ${donor.name}: ${message.slice(0, 80)}...`)
 
-      const ch = donor.reminder_channel.toLowerCase()
-      if (ch === 'whatsapp') channels.whatsapp++
-      else if (ch === 'sms') channels.sms++
-      else channels.email++
+      const ch = channel.toLowerCase() as 'whatsapp' | 'sms' | 'email'
+      channels[ch]++
       sent++
+      messages.push({ donorName: donor.name, channel, stage, message })
     }
 
-    return NextResponse.json({ sent, channels })
+    return NextResponse.json({ sent, channels, ...(targetDonorId ? { messages } : {}) })
   } catch (error) {
     console.error('Send reminders error:', error)
     return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 })

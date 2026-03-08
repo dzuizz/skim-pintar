@@ -81,7 +81,7 @@ export default async function AdminDonationsPage({ searchParams }: PageProps) {
         <Card>
           <CardContent className="py-5">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary-50 text-primary-700">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded bg-primary-50 text-primary-700">
                 <svg
                   className="h-6 w-6"
                   fill="none"
@@ -112,7 +112,7 @@ export default async function AdminDonationsPage({ searchParams }: PageProps) {
         <Card>
           <CardContent className="py-5">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-gold-50 text-gold-700">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded bg-gold-50 text-gold-700">
                 <svg
                   className="h-6 w-6"
                   fill="none"
@@ -143,7 +143,7 @@ export default async function AdminDonationsPage({ searchParams }: PageProps) {
         <Card>
           <CardContent className="py-5">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-red-50 text-red-700">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded bg-red-50 text-red-700">
                 <svg
                   className="h-6 w-6"
                   fill="none"

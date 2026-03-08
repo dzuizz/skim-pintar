@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 import { generateReference } from '@/lib/paynow-qr'
-import { sendBulkNotifications, type NotificationPayload } from '@/lib/notifications'
+import { generateMessage, type NotificationPayload } from '@/lib/notifications'
 
 /**
  * POST /api/admin/simulate
@@ -212,8 +212,20 @@ export async function POST(request: NextRequest) {
           }
         }
 
-        // Send all notifications
-        const notifResult = await sendBulkNotifications(notifications)
+        // Log notifications for admin manual review
+        let notifLogged = 0
+        for (const n of notifications) {
+          const message = generateMessage(n)
+          try {
+            await supabase.from('reminder_log').insert({
+              donor_id: n.donorId,
+              channel: n.channel,
+              stage: n.type === 'GRACE_WARNING' ? 3 : n.type === 'PAYMENT_MISSED' ? 2 : n.type === 'ACCOUNT_SUSPENDED' ? 4 : 1,
+              message,
+            })
+            notifLogged++
+          } catch { /* table may not exist */ }
+        }
 
         // Reset missed_count for pledges that received payment this cycle
         // (eGIRO auto-received pledges should have missed_count reset)
@@ -240,7 +252,7 @@ export async function POST(request: NextRequest) {
           egiroAutoReceived: egiroCount,
           manualPending: manualCount,
           suspended: suspendedCount,
-          notificationsSent: notifResult.sent,
+          notificationsLogged: notifLogged,
         })
       }
 

@@ -15,7 +15,7 @@ export function StatCard({ icon, value, label, accentClass }: StatCardProps) {
       <CardContent className="flex items-center gap-4 py-5">
         <div
           className={cn(
-            'flex h-12 w-12 shrink-0 items-center justify-center rounded-lg',
+            'flex h-12 w-12 shrink-0 items-center justify-center rounded',
             accentClass ?? 'bg-primary-50 text-primary-700',
           )}
         >

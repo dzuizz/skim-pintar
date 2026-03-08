@@ -288,7 +288,7 @@ export function LandingContent() {
       <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${navScrolled ? 'bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-[0_1px_3px_rgba(6,95,70,0.08)]' : ''}`}>
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
-            <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm ${navScrolled ? 'bg-primary-800 text-white' : 'bg-white/15 text-white'}`}>SP</div>
+            <div className={`w-8 h-8 rounded flex items-center justify-center font-bold text-sm ${navScrolled ? 'bg-primary-800 text-white' : 'bg-white/15 text-white'}`}>SP</div>
             <div>
               <span className={`text-lg font-bold tracking-tight ${navScrolled ? 'text-primary-900 dark:text-white' : 'text-white'}`}>Skim Pintar</span>
               <span className={`hidden sm:inline ml-2 text-xs font-medium ${navScrolled ? 'text-gray-400 dark:text-gray-500' : 'text-white/50'}`}>Masjid Ar-Raudhah</span>
@@ -302,7 +302,7 @@ export function LandingContent() {
             <a href="#impact" className={navLink}>Impact</a>
             <Link href="/my" className={navLink}>My Dashboard</Link>
             <ThemeToggle />
-            <Link href="/pledge" className="bg-primary-700 hover:bg-primary-800 text-white px-5 py-2 rounded-lg text-sm font-semibold transition-colors shadow-lg shadow-primary-900/20">
+            <Link href="/pledge" className="bg-primary-700 hover:bg-primary-800 text-white px-5 py-2 rounded text-sm font-semibold transition-colors shadow-lg shadow-primary-900/20">
               Become a Member
             </Link>
           </div>
@@ -322,7 +322,7 @@ export function LandingContent() {
             <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-gray-700 dark:text-gray-200 py-2">Pricing</a>
             <a href="#impact" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-gray-700 dark:text-gray-200 py-2">Impact</a>
             <Link href="/my" className="text-sm font-medium text-gray-700 dark:text-gray-200 py-2">My Dashboard</Link>
-            <Link href="/pledge" className="bg-primary-700 text-white text-center px-5 py-2.5 rounded-lg text-sm font-semibold mt-1">Become a Member</Link>
+            <Link href="/pledge" className="bg-primary-700 text-white text-center px-5 py-2.5 rounded text-sm font-semibold mt-1">Become a Member</Link>
           </div>
         </div>
       </nav>
@@ -330,22 +330,19 @@ export function LandingContent() {
       {/* ================================================================ */}
       {/* HERO                                                             */}
       {/* ================================================================ */}
-      <section className="relative min-h-screen flex items-center justify-center hero-gradient overflow-hidden">
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+        {/* Mosque photo background */}
+        <div className="absolute inset-0" aria-hidden="true">
+          <img
+            src="/mosque-interior.jpg"
+            alt=""
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-primary-950/80" />
+        </div>
+
         {/* Islamic pattern overlay */}
         <div className="absolute inset-0 islamic-pattern-dark pointer-events-none" aria-hidden="true" />
-
-        {/* Mosque silhouette */}
-        <div className="absolute bottom-0 left-0 right-0 pointer-events-none opacity-[0.06]" aria-hidden="true">
-          <svg viewBox="0 0 1440 220" fill="currentColor" className="w-full text-white" preserveAspectRatio="xMidYMax meet">
-            <rect x="185" y="50" width="14" height="170" rx="2" />
-            <path d="M182 50 Q192 20 202 50" />
-            <path d="M340 220 L340 150 Q410 85 480 150 L480 220 Z" />
-            <path d="M540 220 L540 110 Q720 -10 900 110 L900 220 Z" />
-            <path d="M960 220 L960 150 Q1030 85 1100 150 L1100 220 Z" />
-            <rect x="1241" y="50" width="14" height="170" rx="2" />
-            <path d="M1238 50 Q1248 20 1258 50" />
-          </svg>
-        </div>
 
         {/* Curved section divider */}
         <div className="absolute -bottom-1 left-0 right-0 z-10" aria-hidden="true">
@@ -356,12 +353,15 @@ export function LandingContent() {
 
         {/* Hero content */}
         <div className="relative z-10 max-w-4xl mx-auto px-6 py-32 text-center">
-          <p className={`text-sm font-semibold text-gold-400 uppercase tracking-[0.2em] mb-5 transition-all duration-700 ${heroReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+          <p className={`text-2xl text-gold-400/80 mb-3 transition-all duration-700 ${heroReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`} style={{ fontFamily: 'serif' }}>
+            &#1576;&#1616;&#1587;&#1618;&#1605;&#1616; &#1649;&#1604;&#1604;&#1617;&#1614;&#1607;&#1616; &#1649;&#1604;&#1585;&#1617;&#1614;&#1581;&#1618;&#1605;&#1614;&#1600;&#1648;&#1606;&#1616; &#1649;&#1604;&#1585;&#1617;&#1614;&#1581;&#1616;&#1610;&#1605;&#1616;
+          </p>
+          <p className={`text-sm font-semibold text-gold-400 uppercase tracking-[0.2em] mb-5 transition-all duration-700 delay-75 ${heroReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
             Masjid Ar-Raudhah · Bukit Batok, Singapore
           </p>
-          <h1 className={`text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-white leading-[1.1] tracking-tight transition-all duration-700 delay-100 ${heroReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+          <h1 className={`text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-[1.08] tracking-tight transition-all duration-700 delay-100 ${heroReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
             Be Part of Something<br />
-            <span className="bg-gradient-to-r from-primary-200 via-gold-300 to-primary-200 bg-clip-text text-transparent">Greater Than Yourself</span>
+            <span className="text-gold-400">Greater Than Yourself</span>
           </h1>
           <p className={`mt-6 text-base sm:text-lg text-primary-100/90 max-w-2xl mx-auto leading-relaxed transition-all duration-700 delay-200 ${heroReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
             Join Skim Pintar — Masjid Ar-Raudhah&apos;s official membership programme powering aLIVE, Raudhatul Quran, Khidmat Jenazah, and more. From just $5/month.
@@ -373,10 +373,10 @@ export function LandingContent() {
 
           {/* CTAs */}
           <div className={`mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 transition-all duration-700 delay-300 ${heroReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
-            <Link href="/pledge" className="bg-primary-500 hover:bg-primary-400 text-white px-8 py-3.5 rounded-xl text-base font-semibold transition-all shadow-xl shadow-primary-950/30 hover:shadow-2xl hover:shadow-primary-950/40 hover:-translate-y-0.5">
+            <Link href="/pledge" className="bg-primary-500 hover:bg-primary-400 text-white px-8 py-3.5 rounded text-base font-semibold transition-all shadow-xl shadow-primary-950/30 hover:shadow-2xl hover:shadow-primary-950/40 hover:-translate-y-0.5">
               Become a Member
             </Link>
-            <a href="#benefits" className="border-2 border-white/25 hover:border-white/50 text-white px-8 py-3.5 rounded-xl text-base font-semibold transition-all hover:-translate-y-0.5">
+            <a href="#benefits" className="border-2 border-white/25 hover:border-white/50 text-white px-8 py-3.5 rounded text-base font-semibold transition-all hover:-translate-y-0.5">
               See All Benefits
             </a>
           </div>
@@ -416,7 +416,7 @@ export function LandingContent() {
                 <button
                   key={key}
                   onClick={() => setActiveTab(key)}
-                  className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all ${active ? 'bg-primary-800 text-white shadow-lg shadow-primary-900/20' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
+                  className={`px-5 py-2.5 rounded text-sm font-semibold transition-all ${active ? 'bg-primary-800 text-white shadow-lg shadow-primary-900/20' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
                 >
                   {tab.label} <span className={`ml-1 text-xs ${active ? 'text-primary-200' : 'text-gray-400 dark:text-gray-500'}`}>{tab.age}</span>
                 </button>
@@ -427,8 +427,8 @@ export function LandingContent() {
           {/* Benefits grid */}
           <div key={activeTab} className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 tab-enter">
             {tabData.benefits.map((b, i) => (
-              <div key={i} className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl p-6 card-hover">
-                <div className="w-10 h-10 rounded-xl bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center text-primary-700 dark:text-primary-400 mb-4">
+              <div key={i} className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded p-6 card-hover">
+                <div className="w-10 h-10 rounded bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center text-primary-700 dark:text-primary-400 mb-4">
                   <Icon name={b.icon} className="w-5 h-5" />
                 </div>
                 <h3 className="font-bold text-primary-900 dark:text-primary-100 text-base">{b.title}</h3>
@@ -438,6 +438,8 @@ export function LandingContent() {
           </div>
         </div>
       </section>
+
+      <div className="section-divider max-w-4xl mx-auto" />
 
       {/* ================================================================ */}
       {/* PROGRAMMES - WHAT YOUR SUPPORT POWERS                            */}
@@ -455,8 +457,8 @@ export function LandingContent() {
 
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {PROGRAMMES.map((prog, i) => (
-              <div key={i} className={`reveal reveal-delay-${Math.min(i, 5)} bg-white dark:bg-gray-900 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 card-hover`}>
-                <div className="w-10 h-10 rounded-xl bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center text-primary-700 dark:text-primary-400 mb-4">
+              <div key={i} className={`reveal reveal-delay-${Math.min(i, 5)} bg-white dark:bg-gray-900 rounded p-6 border border-gray-100 dark:border-gray-700 card-hover`}>
+                <div className="w-10 h-10 rounded bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center text-primary-700 dark:text-primary-400 mb-4">
                   <Icon name={prog.icon} className="w-5 h-5" />
                 </div>
                 <div className="flex items-baseline gap-2 mb-1.5">
@@ -488,8 +490,8 @@ export function LandingContent() {
 
           <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {PERKS.map((perk, i) => (
-              <div key={i} className={`reveal reveal-delay-${Math.min(i, 7)} gold-shimmer bg-white dark:bg-gray-900 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 card-hover`}>
-                <div className="w-10 h-10 rounded-xl bg-gold-50 dark:bg-gold-900/20 flex items-center justify-center text-gold-700 dark:text-gold-400 mb-4">
+              <div key={i} className={`reveal reveal-delay-${Math.min(i, 7)} gold-shimmer bg-white dark:bg-gray-900 rounded p-6 border border-gray-100 dark:border-gray-700 card-hover`}>
+                <div className="w-10 h-10 rounded bg-gold-50 dark:bg-gold-900/20 flex items-center justify-center text-gold-700 dark:text-gold-400 mb-4">
                   <Icon name={perk.icon} className="w-5 h-5" />
                 </div>
                 <h3 className="font-bold text-primary-900 dark:text-primary-100 text-sm">{perk.title}</h3>
@@ -499,6 +501,8 @@ export function LandingContent() {
           </div>
         </div>
       </section>
+
+      <div className="section-divider max-w-4xl mx-auto" />
 
       {/* ================================================================ */}
       {/* PRICING                                                          */}
@@ -515,7 +519,7 @@ export function LandingContent() {
             {PRICING.map((plan, i) => (
               <div
                 key={i}
-                className={`reveal reveal-delay-${i + 1} rounded-2xl overflow-hidden ${
+                className={`reveal reveal-delay-${i + 1} rounded overflow-hidden ${
                   plan.popular
                     ? 'pricing-popular text-white shadow-2xl shadow-primary-900/30 ring-2 ring-gold-400 lg:-mt-4 lg:mb-[-16px]'
                     : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 card-hover'
@@ -544,7 +548,7 @@ export function LandingContent() {
                   </ul>
                   <Link
                     href={`/pledge?tier=${plan.tier}`}
-                    className={`mt-8 block text-center py-3 rounded-xl text-sm font-semibold transition-all ${
+                    className={`mt-8 block text-center py-3 rounded text-sm font-semibold transition-all ${
                       plan.popular
                         ? 'bg-white text-primary-800 hover:bg-primary-50 shadow-lg'
                         : 'bg-primary-800 text-white hover:bg-primary-700 shadow-lg shadow-primary-900/15'
@@ -562,6 +566,8 @@ export function LandingContent() {
           </p>
         </div>
       </section>
+
+      <div className="section-divider max-w-4xl mx-auto" />
 
       {/* ================================================================ */}
       {/* LOYALTY REWARDS                                                  */}
@@ -642,10 +648,10 @@ export function LandingContent() {
           </p>
 
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 reveal reveal-delay-2">
-            <Link href="/pledge" className="bg-primary-800 hover:bg-primary-700 text-white px-8 py-3.5 rounded-xl text-base font-semibold transition-all shadow-xl shadow-primary-900/20 hover:-translate-y-0.5">
+            <Link href="/pledge" className="bg-primary-800 hover:bg-primary-700 text-white px-8 py-3.5 rounded text-base font-semibold transition-all shadow-xl shadow-primary-900/20 hover:-translate-y-0.5">
               Become a Member
             </Link>
-            <Link href="/pledge" className="border-2 border-primary-200 dark:border-primary-700 hover:border-primary-300 dark:hover:border-primary-500 text-primary-800 dark:text-primary-200 px-8 py-3.5 rounded-xl text-base font-semibold transition-all hover:-translate-y-0.5">
+            <Link href="/pledge/gift" className="border-2 border-primary-200 dark:border-primary-700 hover:border-primary-300 dark:hover:border-primary-500 text-primary-800 dark:text-primary-200 px-8 py-3.5 rounded text-base font-semibold transition-all hover:-translate-y-0.5">
               Gift a Membership
             </Link>
           </div>
@@ -665,7 +671,7 @@ export function LandingContent() {
             {/* Brand */}
             <div>
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-white font-bold text-sm">SP</div>
+                <div className="w-8 h-8 rounded bg-white/10 flex items-center justify-center text-white font-bold text-sm">SP</div>
                 <span className="text-lg font-bold text-white tracking-tight">Skim Pintar</span>
               </div>
               <p className="mt-3 text-sm text-primary-300/60 leading-relaxed">

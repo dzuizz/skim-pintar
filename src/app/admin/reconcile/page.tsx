@@ -160,7 +160,7 @@ export default function ReconcilePage() {
               type="month"
               value={month}
               onChange={(e) => setMonth(e.target.value)}
-              className="block w-full sm:w-48 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="block w-full sm:w-48 rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             />
           </div>
 
@@ -171,7 +171,7 @@ export default function ReconcilePage() {
             onDragOver={handleDrag}
             onDrop={handleDrop}
             onClick={() => fileInputRef.current?.click()}
-            className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors ${
+            className={`border-2 border-dashed rounded p-8 text-center cursor-pointer transition-colors ${
               dragActive
                 ? 'border-primary-500 bg-primary-50'
                 : selectedFile
@@ -266,14 +266,14 @@ export default function ReconcilePage() {
 
       {/* Error message */}
       {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+        <div className="rounded border border-red-200 bg-red-50 p-4">
           <p className="text-sm text-red-700">{error}</p>
         </div>
       )}
 
       {/* Success message */}
       {success && (
-        <div className="rounded-lg border border-primary-200 bg-primary-50 p-4">
+        <div className="rounded border border-primary-200 bg-primary-50 p-4">
           <p className="text-sm text-primary-700">{success}</p>
         </div>
       )}

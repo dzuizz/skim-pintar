@@ -165,7 +165,7 @@ export default function TransparencyConfigPage() {
             <CardContent className="space-y-4">
               {/* Warning banner */}
               {!isValid && categories.length > 0 && (
-                <div className="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800">
+                <div className="rounded bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800">
                   Percentages must sum to 100% (currently {total}%)
                 </div>
               )}
@@ -174,7 +174,7 @@ export default function TransparencyConfigPage() {
               {categories.map((cat, index) => (
                 <div
                   key={index}
-                  className="rounded-lg border border-gray-200 p-4 space-y-3"
+                  className="rounded border border-gray-200 p-4 space-y-3"
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium text-gray-700">
@@ -236,7 +236,7 @@ export default function TransparencyConfigPage() {
               </Button>
 
               {/* Total indicator */}
-              <div className="flex items-center justify-between rounded-lg bg-gray-50 px-4 py-3">
+              <div className="flex items-center justify-between rounded bg-gray-50 px-4 py-3">
                 <span className="text-sm font-medium text-gray-700">Total</span>
                 <span
                   className={`text-sm font-bold ${
@@ -250,7 +250,7 @@ export default function TransparencyConfigPage() {
               {/* Status message */}
               {message && (
                 <div
-                  className={`rounded-lg px-4 py-3 text-sm ${
+                  className={`rounded px-4 py-3 text-sm ${
                     message.type === 'success'
                       ? 'bg-primary-50 border border-primary-200 text-primary-800'
                       : 'bg-red-50 border border-red-200 text-red-800'

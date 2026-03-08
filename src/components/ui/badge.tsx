@@ -20,7 +20,7 @@ function Badge({ className, variant, ...props }: BadgeProps) {
   return (
     <span
       className={cn(
-        'inline-flex items-center rounded-full px-3 py-1 text-xs font-medium uppercase',
+        'inline-flex items-center rounded px-3 py-1 text-xs font-medium uppercase',
         variantStyles[variant],
         className,
       )}

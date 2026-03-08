@@ -11,7 +11,6 @@ interface ProfileEditorProps {
     id: number
     name: string
     email: string | null
-    address: string | null
     reminderChannel: string
     updatedAt?: string
   }
@@ -27,7 +26,6 @@ export function ProfileEditor({ donor, onUpdate }: ProfileEditorProps) {
   const [form, setForm] = useState({
     name: donor.name,
     email: donor.email || '',
-    address: donor.address || '',
     reminderChannel: donor.reminderChannel,
   })
 
@@ -42,7 +40,6 @@ export function ProfileEditor({ donor, onUpdate }: ProfileEditorProps) {
         body: JSON.stringify({
           name: form.name,
           email: form.email,
-          address: form.address,
           reminderChannel: form.reminderChannel,
         }),
       })
@@ -55,13 +52,11 @@ export function ProfileEditor({ donor, onUpdate }: ProfileEditorProps) {
         id: donor.id,
         name: updated.name,
         email: updated.email,
-        address: updated.address,
         reminderChannel: updated.reminder_channel,
       }
       setForm({
         name: savedDonor.name,
         email: savedDonor.email || '',
-        address: savedDonor.address || '',
         reminderChannel: savedDonor.reminderChannel,
       })
       setSuccess(true)
@@ -95,12 +90,12 @@ export function ProfileEditor({ donor, onUpdate }: ProfileEditorProps) {
       </CardHeader>
       <CardContent className="pt-0">
         {success && (
-          <div className="mb-4 rounded-lg border border-primary-200 dark:border-primary-800 bg-primary-50 dark:bg-primary-900/20 p-2">
+          <div className="mb-4 rounded border border-primary-200 dark:border-primary-800 bg-primary-50 dark:bg-primary-900/20 p-2">
             <p className="text-xs text-primary-700 dark:text-primary-400">{t.dashboard.profileUpdated}</p>
           </div>
         )}
         {error && (
-          <div className="mb-4 rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-2">
+          <div className="mb-4 rounded border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-2">
             <p className="text-xs text-red-600 dark:text-red-400">{error}</p>
           </div>
         )}
@@ -118,11 +113,6 @@ export function ProfileEditor({ donor, onUpdate }: ProfileEditorProps) {
               value={form.email}
               onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
             />
-            <Input
-              label={t.dashboard.address}
-              value={form.address}
-              onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))}
-            />
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 {t.dashboard.remindersVia}
@@ -133,7 +123,7 @@ export function ProfileEditor({ donor, onUpdate }: ProfileEditorProps) {
                     key={ch.value}
                     type="button"
                     onClick={() => setForm((f) => ({ ...f, reminderChannel: ch.value }))}
-                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                    className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
                       form.reminderChannel === ch.value
                         ? 'bg-primary-700 text-white'
                         : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
@@ -148,7 +138,7 @@ export function ProfileEditor({ donor, onUpdate }: ProfileEditorProps) {
               <Button type="button" variant="primary" size="sm" onClick={handleSave} disabled={saving}>
                 {saving ? t.dashboard.saving : t.dashboard.saveChanges}
               </Button>
-              <Button type="button" variant="outline" size="sm" onClick={() => { setEditing(false); setError(null); setForm({ name: donor.name, email: donor.email || '', address: donor.address || '', reminderChannel: donor.reminderChannel }) }}>
+              <Button type="button" variant="outline" size="sm" onClick={() => { setEditing(false); setError(null); setForm({ name: donor.name, email: donor.email || '', reminderChannel: donor.reminderChannel }) }}>
                 {t.dashboard.cancel}
               </Button>
             </div>
@@ -162,10 +152,6 @@ export function ProfileEditor({ donor, onUpdate }: ProfileEditorProps) {
             <div className="flex justify-between">
               <dt className="text-sm text-gray-500 dark:text-gray-400">{t.dashboard.email}</dt>
               <dd className="text-sm font-medium text-gray-900 dark:text-gray-100">{donor.email || '—'}</dd>
-            </div>
-            <div className="flex justify-between">
-              <dt className="text-sm text-gray-500 dark:text-gray-400">{t.dashboard.address}</dt>
-              <dd className="text-sm font-medium text-gray-900 dark:text-gray-100">{donor.address || '—'}</dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-sm text-gray-500 dark:text-gray-400">{t.dashboard.remindersVia}</dt>

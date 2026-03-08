@@ -62,7 +62,7 @@ export function QRDisplay({
         {/* QR Code */}
         <div className="flex justify-center mb-6">
           {loading ? (
-            <div className="w-64 h-64 bg-gray-100 rounded-lg animate-pulse flex items-center justify-center">
+            <div className="w-64 h-64 bg-gray-100 rounded animate-pulse flex items-center justify-center">
               <svg
                 className="w-8 h-8 text-gray-300 animate-spin"
                 xmlns="http://www.w3.org/2000/svg"
@@ -85,11 +85,11 @@ export function QRDisplay({
               </svg>
             </div>
           ) : error ? (
-            <div className="w-64 h-64 bg-red-50 rounded-lg flex items-center justify-center p-4">
+            <div className="w-64 h-64 bg-red-50 rounded flex items-center justify-center p-4">
               <p className="text-sm text-red-600 text-center">{error}</p>
             </div>
           ) : (
-            <div className="bg-white border border-gray-200 rounded-lg p-3">
+            <div className="bg-white border border-gray-200 rounded p-3">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={qrDataURL!}

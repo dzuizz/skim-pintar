@@ -90,13 +90,13 @@ export default function SettingsPage() {
         <CardContent className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">UEN</label>
-            <div className="px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm font-mono text-gray-900">
+            <div className="px-4 py-2.5 bg-gray-50 border border-gray-200 rounded text-sm font-mono text-gray-900">
               T08CC4018F
             </div>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Recipient Name</label>
-            <div className="px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-900">
+            <div className="px-4 py-2.5 bg-gray-50 border border-gray-200 rounded text-sm text-gray-900">
               MASJID AR-RAUDHAH
             </div>
           </div>
@@ -186,7 +186,7 @@ export default function SettingsPage() {
 
             {message && (
               <div
-                className={`text-sm px-4 py-2.5 rounded-lg ${
+                className={`text-sm px-4 py-2.5 rounded ${
                   message.type === 'success'
                     ? 'bg-primary-50 text-primary-700 border border-primary-200'
                     : 'bg-red-50 text-red-700 border border-red-200'

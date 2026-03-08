@@ -333,7 +333,7 @@ export default async function AdminDonorDetailPage({ params }: DonorDetailPagePr
                 {donations.map((donation: { id: number; cycle_month: string; amount: number; reference: string; status: string }) => (
                   <div
                     key={donation.id}
-                    className="border border-gray-100 rounded-lg p-4"
+                    className="border border-gray-100 rounded p-4"
                   >
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm font-medium text-gray-900">

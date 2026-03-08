@@ -22,7 +22,7 @@ export function SiteNav() {
         <div className="flex items-center gap-2 sm:gap-3">
           <Link
             href="/my"
-            className={`text-sm font-medium px-3 py-1.5 rounded-lg transition-colors ${
+            className={`text-sm font-medium px-3 py-1.5 rounded transition-colors ${
               pathname === '/my'
                 ? 'text-white bg-primary-700'
                 : 'text-primary-200 hover:text-white hover:bg-primary-700/50'
@@ -34,7 +34,7 @@ export function SiteNav() {
           {!isLanding && pathname !== '/pledge' && (
             <Link
               href="/pledge"
-              className="text-sm font-semibold bg-gold-500 text-white px-4 py-1.5 rounded-lg hover:bg-gold-600 transition-colors"
+              className="text-sm font-semibold bg-gold-500 text-white px-4 py-1.5 rounded hover:bg-gold-600 transition-colors"
             >
               {t.nav.donate}
             </Link>

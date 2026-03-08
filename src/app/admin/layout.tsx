@@ -151,7 +151,7 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-primary-900 dark:bg-gray-800 text-white flex flex-col transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:z-auto ${
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-primary-900 dark:bg-gray-800 text-white flex flex-col transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:sticky lg:top-0 lg:h-screen lg:z-auto ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -180,7 +180,7 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
               key={item.href}
               href={item.href}
               onClick={() => setSidebarOpen(false)}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+              className={`flex items-center gap-3 px-3 py-2.5 rounded text-sm font-medium transition-colors ${
                 isActive(item.href)
                   ? 'bg-gold-500/20 text-gold-300'
                   : 'text-primary-200 hover:bg-primary-800 dark:hover:bg-gray-700 hover:text-white'
@@ -192,17 +192,31 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
           ))}
         </nav>
 
-        {/* Sidebar footer - Logout */}
+        {/* Logout */}
         <div className="px-3 py-4 border-t border-primary-800 dark:border-gray-700">
           <button
             onClick={() => signOut({ callbackUrl: '/admin/login' })}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-primary-200 hover:bg-primary-800 dark:hover:bg-gray-700 hover:text-white transition-colors w-full"
+            className="flex items-center gap-3 px-3 py-2.5 rounded text-sm font-medium text-primary-200 hover:bg-primary-800 dark:hover:bg-gray-700 hover:text-white transition-colors w-full"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
             </svg>
             Logout
           </button>
+        </div>
+
+        {/* Back to Site — pinned to bottom */}
+        <div className="px-3 py-3 border-t border-primary-800/50 dark:border-gray-700/50">
+          <Link
+            href="/"
+            onClick={() => setSidebarOpen(false)}
+            className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-primary-400 hover:text-white transition-colors w-full"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Back to Site
+          </Link>
         </div>
       </aside>
 
@@ -213,7 +227,7 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-3">
             {/* Mobile hamburger */}
             <button
-              className="lg:hidden p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+              className="lg:hidden p-1.5 rounded text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
               onClick={() => setSidebarOpen(true)}
             >
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

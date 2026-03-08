@@ -116,7 +116,7 @@ export function StepAmount({ data, onChange, errors }: StepAmountProps) {
                 key={tier.id}
                 type="button"
                 onClick={() => selectTier(tier)}
-                className={`relative rounded-xl border-2 p-5 text-left transition-all ${
+                className={`relative rounded border-2 p-5 text-left transition-all ${
                   isSelected
                     ? 'border-gold-500 bg-gold-50 dark:bg-gold-900/20 shadow-sm'
                     : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 bg-white dark:bg-gray-800'
@@ -203,7 +203,7 @@ export function StepAmount({ data, onChange, errors }: StepAmountProps) {
           <button
             type="button"
             onClick={() => onChange({ paymentMethod: 'MANUAL' })}
-            className={`rounded-xl border-2 p-4 text-left transition-all ${
+            className={`rounded border-2 p-4 text-left transition-all ${
               data.paymentMethod === 'MANUAL'
                 ? 'border-gold-500 bg-gold-50 dark:bg-gold-900/20 shadow-sm'
                 : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 bg-white dark:bg-gray-800'
@@ -219,7 +219,7 @@ export function StepAmount({ data, onChange, errors }: StepAmountProps) {
           <button
             type="button"
             onClick={() => onChange({ paymentMethod: 'EGIRO' })}
-            className={`rounded-xl border-2 p-4 text-left transition-all ${
+            className={`rounded border-2 p-4 text-left transition-all ${
               data.paymentMethod === 'EGIRO'
                 ? 'border-gold-500 bg-gold-50 dark:bg-gold-900/20 shadow-sm'
                 : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 bg-white dark:bg-gray-800'
@@ -234,7 +234,7 @@ export function StepAmount({ data, onChange, errors }: StepAmountProps) {
           </button>
         </div>
         {data.paymentMethod === 'EGIRO' && (
-          <div className="mt-3 rounded-lg bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 p-3">
+          <div className="mt-3 rounded bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 p-3">
             <p className="text-xs text-primary-800 dark:text-primary-300 leading-relaxed">
               {t.pledge.egiroInfo}
             </p>

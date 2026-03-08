@@ -1,7 +1,10 @@
 /**
  * Notification service for sending reminders to donors.
- * MVP: logs to console. Replace with actual SMS/email provider later.
+ * Generates reminder messages that admins can copy and send manually
+ * via WhatsApp, SMS, or email.
  */
+
+export type NotificationType = 'REMINDER_UPCOMING' | 'PAYMENT_MISSED' | 'GRACE_WARNING' | 'ACCOUNT_SUSPENDED'
 
 export interface NotificationPayload {
   donorId: number
@@ -9,50 +12,23 @@ export interface NotificationPayload {
   phone: string
   email: string | null
   channel: 'WHATSAPP' | 'SMS' | 'EMAIL'
-  type: 'PAYMENT_MISSED' | 'GRACE_WARNING' | 'ACCOUNT_SUSPENDED'
+  type: NotificationType
   amount: number
   missedCount: number
   graceDeadline: string | null
 }
 
-const messageTemplates: Record<NotificationPayload['type'], (p: NotificationPayload) => string> = {
+const messageTemplates: Record<NotificationType, (p: NotificationPayload) => string> = {
+  REMINDER_UPCOMING: (p) =>
+    `Assalamualaikum ${p.donorName}, friendly reminder: your Skim Pintar contribution of $${p.amount} is due soon. PayNow to UEN S93MQ0024E. JazakAllahu Khairan.`,
   PAYMENT_MISSED: (p) =>
-    `Assalamualaikum ${p.donorName}, your Skim Pintar donation of $${p.amount} was not received this month. Please make your payment to avoid account suspension. JazakAllahu Khairan.`,
+    `Assalamualaikum ${p.donorName}, your Skim Pintar donation of $${p.amount} was not received this month. Please make your payment to avoid account suspension. PayNow to UEN S93MQ0024E. JazakAllahu Khairan.`,
   GRACE_WARNING: (p) =>
-    `Assalamualaikum ${p.donorName}, your Skim Pintar account is at risk. You have missed ${p.missedCount} payment(s). Grace period ends ${p.graceDeadline ? new Date(p.graceDeadline).toLocaleDateString('en-SG', { day: 'numeric', month: 'long', year: 'numeric' }) : 'soon'}. Please make your payment to keep your account active.`,
+    `Assalamualaikum ${p.donorName}, your Skim Pintar account is at risk. You have missed ${p.missedCount} payment(s). Grace period ends ${p.graceDeadline ? new Date(p.graceDeadline).toLocaleDateString('en-SG', { day: 'numeric', month: 'long', year: 'numeric' }) : 'soon'}. Please make your payment to keep your account active. PayNow to UEN S93MQ0024E.`,
   ACCOUNT_SUSPENDED: (p) =>
-    `Assalamualaikum ${p.donorName}, your Skim Pintar account has been suspended due to missed payments. Please contact the mosque to reactivate your donation. JazakAllahu Khairan.`,
+    `Assalamualaikum ${p.donorName}, your Skim Pintar account has been suspended due to missed payments. Visit your dashboard at skimpintar.com/my to reactivate. JazakAllahu Khairan.`,
 }
 
-export async function sendNotification(payload: NotificationPayload): Promise<{ sent: boolean; message: string }> {
-  const message = messageTemplates[payload.type](payload)
-
-  // MVP: log to console. In production, integrate with:
-  // - WhatsApp Business API / Twilio for WHATSAPP
-  // - Twilio / AWS SNS for SMS
-  // - SendGrid / AWS SES for EMAIL
-  console.log(`[NOTIFICATION] ${payload.channel} to ${payload.channel === 'EMAIL' ? payload.email : payload.phone}`)
-  console.log(`[NOTIFICATION] Type: ${payload.type} | Donor: ${payload.donorName} (ID: ${payload.donorId})`)
-  console.log(`[NOTIFICATION] Message: ${message}`)
-
-  return { sent: true, message }
-}
-
-export async function sendBulkNotifications(payloads: NotificationPayload[]): Promise<{ sent: number; failed: number; details: Array<{ donorId: number; type: string; sent: boolean }> }> {
-  const details: Array<{ donorId: number; type: string; sent: boolean }> = []
-  let sent = 0
-  let failed = 0
-
-  for (const payload of payloads) {
-    try {
-      await sendNotification(payload)
-      details.push({ donorId: payload.donorId, type: payload.type, sent: true })
-      sent++
-    } catch {
-      details.push({ donorId: payload.donorId, type: payload.type, sent: false })
-      failed++
-    }
-  }
-
-  return { sent, failed, details }
+export function generateMessage(payload: NotificationPayload): string {
+  return messageTemplates[payload.type](payload)
 }

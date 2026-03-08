@@ -29,6 +29,7 @@
   --color-warmWhite: #FAFAF5;
 
   --font-sans: var(--font-jakarta);
+  --font-heading: var(--font-crimson);
 }
 
 html {
@@ -44,6 +45,12 @@ body {
 html.dark body {
   background-color: #111827;
   color: #f3f4f6;
+}
+
+/* ========== Serif Headings ========== */
+
+h1, h2, h3 {
+  font-family: var(--font-heading), Georgia, serif;
 }
 
 /* ========== Scroll Reveal Animations ========== */
@@ -86,29 +93,29 @@ html.dark body {
       0deg,
       transparent,
       transparent 38px,
-      rgba(6, 95, 70, 0.035) 38px,
-      rgba(6, 95, 70, 0.035) 40px
+      rgba(6, 95, 70, 0.04) 38px,
+      rgba(6, 95, 70, 0.04) 40px
     ),
     repeating-linear-gradient(
       90deg,
       transparent,
       transparent 38px,
-      rgba(6, 95, 70, 0.035) 38px,
-      rgba(6, 95, 70, 0.035) 40px
+      rgba(6, 95, 70, 0.04) 38px,
+      rgba(6, 95, 70, 0.04) 40px
     ),
     repeating-linear-gradient(
       45deg,
       transparent,
       transparent 26px,
-      rgba(6, 95, 70, 0.025) 26px,
-      rgba(6, 95, 70, 0.025) 28px
+      rgba(6, 95, 70, 0.03) 26px,
+      rgba(6, 95, 70, 0.03) 28px
     ),
     repeating-linear-gradient(
       -45deg,
       transparent,
       transparent 26px,
-      rgba(6, 95, 70, 0.025) 26px,
-      rgba(6, 95, 70, 0.025) 28px
+      rgba(6, 95, 70, 0.03) 26px,
+      rgba(6, 95, 70, 0.03) 28px
     );
 }
 
@@ -154,18 +161,18 @@ html.dark body {
 /* ========== Card Hover ========== */
 
 .card-hover {
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
 .card-hover:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 40px -8px rgba(6, 95, 70, 0.15);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 32px -6px rgba(6, 95, 70, 0.12);
 }
 
 /* ========== Pricing Card Highlight ========== */
 
 .pricing-popular {
-  background: linear-gradient(135deg, #065f46 0%, #047857 50%, #064e3b 100%);
+  background: linear-gradient(160deg, #064e3b 0%, #065f46 40%, #047857 100%);
 }
 
 /* ========== Timeline ========== */
@@ -194,7 +201,7 @@ html.dark body {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(212, 168, 67, 0.1), transparent);
+  background: linear-gradient(90deg, transparent, rgba(212, 168, 67, 0.08), transparent);
   transition: left 0.5s ease;
 }
 
@@ -211,4 +218,15 @@ html.dark body {
 
 .tab-enter {
   animation: tabFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ========== Section Divider ========== */
+
+.section-divider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(6, 95, 70, 0.15), rgba(212, 168, 67, 0.2), rgba(6, 95, 70, 0.15), transparent);
+}
+
+.dark .section-divider {
+  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.08), rgba(212, 168, 67, 0.12), rgba(255, 255, 255, 0.08), transparent);
 }

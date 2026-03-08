@@ -23,7 +23,7 @@ export function LanguageToggle() {
   return (
     <button
       onClick={toggle}
-      className="flex items-center gap-1.5 rounded-lg bg-white/10 px-2.5 py-1.5 text-sm font-medium text-white transition-colors hover:bg-white/20"
+      className="flex items-center gap-1.5 rounded bg-white/10 px-2.5 py-1.5 text-sm font-medium text-white transition-colors hover:bg-white/20"
       title={locale === 'en' ? 'Tukar ke Bahasa Melayu' : 'Switch to English'}
     >
       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">

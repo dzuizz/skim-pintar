@@ -149,7 +149,7 @@ export default function SimulatePage() {
       {/* Status message */}
       {message && (
         <div
-          className={`rounded-lg border p-3 ${
+          className={`rounded border p-3 ${
             message.type === 'success'
               ? 'border-primary-200 dark:border-primary-800 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400'
               : 'border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400'
@@ -219,7 +219,7 @@ export default function SimulatePage() {
             <button
               key={m}
               onClick={() => setSelectedMonth(m)}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
                 selectedMonth === m
                   ? 'bg-primary-700 text-white'
                   : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
@@ -250,7 +250,7 @@ export default function SimulatePage() {
               {filteredDonations.map((donation) => (
                 <div
                   key={donation.id}
-                  className="flex items-center justify-between gap-4 rounded-lg border border-gray-100 dark:border-gray-700 p-3"
+                  className="flex items-center justify-between gap-4 rounded border border-gray-100 dark:border-gray-700 p-3"
                 >
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-gray-900 dark:text-gray-100">

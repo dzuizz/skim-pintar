@@ -225,7 +225,6 @@ export default function PledgePage() {
           name: formData.name.trim(),
           phone,
           email: formData.email.trim() || undefined,
-          nricLast4: formData.nricLast4.trim() || undefined,
           reminderChannel: formData.reminderChannel,
           amount: formData.amount,
           frequency: formData.frequency,
@@ -356,7 +355,7 @@ export default function PledgePage() {
               )}
 
               {/* Disclaimer */}
-              <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-4">
+              <div className="rounded border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-4">
                 <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
                   {t.pledge.disclaimer}
                 </p>
@@ -380,7 +379,7 @@ export default function PledgePage() {
 
               {/* Submit error */}
               {submitError && (
-                <div className="rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-3 text-center">
+                <div className="rounded border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-3 text-center">
                   <p className="text-sm text-red-600">{submitError}</p>
                 </div>
               )}
