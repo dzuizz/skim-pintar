@@ -98,6 +98,7 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
   const [updating, setUpdating] = useState(false)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [selectedTier, setSelectedTier] = useState<string | null>(null)
+  const [customAmount, setCustomAmount] = useState('')
   const t = useLocale()
 
   const tierLabels: Record<string, string> = {
@@ -136,10 +137,14 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
       if (action === 'reactivate') {
         res = await fetch(`/api/pledges/${pledge.id}/reactivate`, { method: 'POST' })
       } else if (action === 'tierChange' && selectedTier) {
+        const amount = selectedTier === 'CUSTOM'
+          ? (parseFloat(customAmount) || 0)
+          : tierAmounts[selectedTier]
+        if (amount <= 0) return
         res = await fetch(`/api/pledges/${pledge.id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tier: selectedTier, amount: tierAmounts[selectedTier] }),
+          body: JSON.stringify({ tier: selectedTier, amount }),
         })
       } else {
         const statusMap: Record<string, string> = {
@@ -175,6 +180,7 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
       }
       setSuccessMessage(messages[action])
       setSelectedTier(null)
+      setCustomAmount('')
     } catch (error) {
       console.error('Pledge action error:', error)
       setSuccessMessage(null)
@@ -350,7 +356,9 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
                           onClick={() => openTierChange(tier)}
                           className="px-3 py-1.5 rounded text-xs font-medium border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-primary-400 hover:text-primary-700 dark:hover:text-primary-400 transition-colors"
                         >
-                          {tierLabels[tier]} — {formatCurrency(tierAmounts[tier])}/mo
+                          {tier === 'CUSTOM'
+                            ? `${tierLabels[tier]} — ${t.pledge.tierCustomTagline}`
+                            : `${tierLabels[tier]} — ${formatCurrency(tierAmounts[tier])}/mo`}
                         </button>
                       ))}
                     </div>
@@ -635,9 +643,33 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
                 {confirmAction === 'tierChange' && selectedTier && (
                   <>
                     {t.dashboard.tierChangeDesc}
-                    <span className="block mt-2 font-medium text-gray-900 dark:text-gray-100">
-                      {tierLabels[pledge?.tier || '']} ({formatCurrency(pledge?.amount || 0)}) → {tierLabels[selectedTier]} ({formatCurrency(tierAmounts[selectedTier])})
-                    </span>
+                    {selectedTier === 'CUSTOM' ? (
+                      <span className="block mt-3">
+                        <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                          {t.pledge.customAmountLabel}
+                        </label>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium text-gray-500">$</span>
+                          <input
+                            type="number"
+                            min="1"
+                            step="1"
+                            placeholder="e.g. 15"
+                            value={customAmount}
+                            onChange={(e) => setCustomAmount(e.target.value.replace(/[^0-9.]/g, ''))}
+                            className="w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:border-primary-500 focus:outline-none"
+                          />
+                          <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">/mo</span>
+                        </div>
+                        <span className="block mt-2 text-xs text-gray-500 dark:text-gray-400">
+                          {tierLabels[pledge?.tier || '']} ({formatCurrency(pledge?.amount || 0)}) → {tierLabels[selectedTier]} ({customAmount ? formatCurrency(parseFloat(customAmount) || 0) : '...'})
+                        </span>
+                      </span>
+                    ) : (
+                      <span className="block mt-2 font-medium text-gray-900 dark:text-gray-100">
+                        {tierLabels[pledge?.tier || '']} ({formatCurrency(pledge?.amount || 0)}) → {tierLabels[selectedTier]} ({formatCurrency(tierAmounts[selectedTier])})
+                      </span>
+                    )}
                   </>
                 )}
               </p>
@@ -645,7 +677,7 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => { setConfirmAction(null); setSelectedTier(null) }}
+                  onClick={() => { setConfirmAction(null); setSelectedTier(null); setCustomAmount('') }}
                   disabled={updating}
                 >
                   {t.dashboard.goBack}
@@ -659,7 +691,7 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
                       : ''
                   }
                   onClick={() => handlePledgeAction(confirmAction)}
-                  disabled={updating}
+                  disabled={updating || (confirmAction === 'tierChange' && selectedTier === 'CUSTOM' && (parseFloat(customAmount) || 0) <= 0)}
                 >
                   {updating
                     ? t.dashboard.updating

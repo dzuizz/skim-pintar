@@ -76,13 +76,15 @@ export async function POST(
 
     if (error) throw error
 
-    // Audit log
-    await supabase.from('audit_log').insert({
-      donor_id: donorId,
-      action: 'ADD_DEPENDANT',
-      field_name: 'dependant',
-      new_value: `${name.trim()} (${relationship.trim()})`,
-    })
+    // Audit log (non-blocking)
+    try {
+      await supabase.from('audit_log').insert({
+        donor_id: donorId,
+        action: 'ADD_DEPENDANT',
+        field_name: 'dependant',
+        new_value: `${name.trim()} (${relationship.trim()})`,
+      })
+    } catch { /* table may not exist */ }
 
     return NextResponse.json(created, { status: 201 })
   } catch (error) {
@@ -127,13 +129,15 @@ export async function DELETE(
 
     if (error) throw error
 
-    // Audit log
-    await supabase.from('audit_log').insert({
-      donor_id: donorId,
-      action: 'REMOVE_DEPENDANT',
-      field_name: 'dependant',
-      old_value: `${dep.name} (${dep.relationship})`,
-    })
+    // Audit log (non-blocking)
+    try {
+      await supabase.from('audit_log').insert({
+        donor_id: donorId,
+        action: 'REMOVE_DEPENDANT',
+        field_name: 'dependant',
+        old_value: `${dep.name} (${dep.relationship})`,
+      })
+    } catch { /* table may not exist */ }
 
     return NextResponse.json({ success: true })
   } catch (error) {
