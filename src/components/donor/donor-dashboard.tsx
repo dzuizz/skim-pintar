@@ -55,23 +55,30 @@ function donationStatusVariant(status: string): BadgeVariant {
   }
 }
 
+function giroStatusVariant(status: string): BadgeVariant {
+  switch (status) {
+    case 'active':
+      return 'active'
+    case 'rejected':
+      return 'cancelled'
+    default:
+      return 'pending'
+  }
+}
+
 function formatMonth(cycleMonth: string): string {
   const [year, month] = cycleMonth.split('-')
   const date = new Date(parseInt(year), parseInt(month) - 1)
   return date.toLocaleDateString('en-SG', { month: 'long', year: 'numeric' })
 }
 
-function channelLabel(channel: string): string {
-  switch (channel) {
-    case 'WHATSAPP':
-      return 'WhatsApp'
-    case 'SMS':
-      return 'SMS'
-    case 'EMAIL':
-      return 'Email'
-    default:
-      return channel
-  }
+function formatDateLabel(value: string | null): string {
+  if (!value) return '—'
+  return new Date(value).toLocaleDateString('en-SG', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  })
 }
 
 function ordinalDay(day: number): string {
@@ -115,7 +122,25 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
     }
   }
 
-  const { donor, pledge, donations, categories } = data
+  const { donor, pledge, donations, categories, giro, hasPayNowRecord, hasGiroRecord } = data
+  const giroStatusLabels: Record<string, string> = {
+    pending: t.dashboard.giroPending,
+    submitted_to_bank: t.dashboard.giroSubmittedToBank,
+    bank_processing: t.dashboard.giroBankProcessing,
+    bank_verified: t.dashboard.giroBankVerified,
+    first_deduction: t.dashboard.giroFirstDeduction,
+    active: t.dashboard.giroActive,
+    rejected: t.dashboard.giroRejected,
+  }
+  const giroStatusDescriptions: Record<string, string> = {
+    pending: t.dashboard.giroPendingDesc,
+    submitted_to_bank: t.dashboard.giroSubmittedToBankDesc,
+    bank_processing: t.dashboard.giroBankProcessingDesc,
+    bank_verified: t.dashboard.giroBankVerifiedDesc,
+    first_deduction: t.dashboard.giroFirstDeductionDesc,
+    active: t.dashboard.giroActiveDesc,
+    rejected: t.dashboard.giroRejectedDesc,
+  }
 
   const cumulativeTotal = donations
     .filter((d) => d.status === 'RECEIVED')
@@ -278,6 +303,96 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
         {/* Left column (main content) */}
         <div className="lg:col-span-2 space-y-6">
           {/* A. Membership Card */}
+          {giro && (
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between gap-3">
+                  <CardTitle>{t.dashboard.giroTracking}</CardTitle>
+                  <Badge variant={giroStatusVariant(giro.donor.giroStatus)}>
+                    {giroStatusLabels[giro.donor.giroStatus] || giro.donor.giroStatus}
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-0 space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t.dashboard.giroMembershipNo}</p>
+                    <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{giro.donor.membershipNo || '—'}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t.dashboard.giroTier}</p>
+                    <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{giro.donor.tier || '—'}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t.dashboard.giroMonthlyAmount}</p>
+                    <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                      {giro.donor.monthlyAmount ? formatCurrency(giro.donor.monthlyAmount) : '—'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t.dashboard.giroBank}</p>
+                    <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{giro.donor.bankName || '—'}</p>
+                  </div>
+                </div>
+
+                <div className="rounded-lg bg-primary-50 dark:bg-primary-900/20 p-4">
+                  <p className="text-sm font-medium text-primary-800 dark:text-primary-200">
+                    {giroStatusDescriptions[giro.donor.giroStatus] || giro.donor.giroStatus}
+                  </p>
+                  {giro.currentPhaseSince && (
+                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                      {t.dashboard.giroCurrentPhaseDays.replace('{days}', String(giro.currentPhaseDays))}
+                      {' · '}
+                      {formatDateLabel(giro.currentPhaseSince)}
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">{t.dashboard.giroTimeline}</h3>
+                    {giro.donor.trackingUrl && (
+                      <a
+                        href={giro.donor.trackingUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-sm font-medium text-primary-700 hover:underline dark:text-primary-400"
+                      >
+                        {t.dashboard.giroOpenTracking}
+                      </a>
+                    )}
+                  </div>
+                  {giro.tracking.length === 0 ? (
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{t.dashboard.giroNoTimeline}</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {giro.tracking.map((entry) => (
+                        <div key={entry.id} className="flex gap-3">
+                          <div className="mt-1 h-2.5 w-2.5 flex-shrink-0 rounded-full bg-primary-500" />
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                              {giroStatusLabels[entry.phase] || entry.phase}
+                            </p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">{formatDateLabel(entry.createdAt)}</p>
+                            {entry.detail && (
+                              <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">{entry.detail}</p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {!hasPayNowRecord && (
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    {t.dashboard.giroReadOnly}
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
           {pledge && (
             <Card>
               <CardHeader>
@@ -395,7 +510,7 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
             </Card>
           )}
 
-          {!pledge && (
+          {!pledge && !hasGiroRecord && (
             <Card>
               <CardContent className="py-8 text-center">
                 <p className="text-gray-500 dark:text-gray-400">{t.dashboard.noPledge}</p>
@@ -565,6 +680,7 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
               address: donor.address,
               reminderChannel: donor.reminderChannel,
             }}
+            editable={hasPayNowRecord}
             onUpdate={(updated) => {
               setData((prev) => ({
                 ...prev,
@@ -576,6 +692,31 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
           {/* Dependants */}
           {pledge && (
             <DependantsList donorId={donor.id} tier={pledge.tier} />
+          )}
+
+          {giro && !hasPayNowRecord && (
+            <Card>
+              <CardHeader>
+                <CardTitle>{t.dashboard.familyMembers}</CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0">
+                {giro.dependants.length === 0 ? (
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t.dashboard.noMembers}</p>
+                ) : (
+                  <div className="space-y-2">
+                    {giro.dependants.map((dep) => (
+                      <div key={dep.id} className="rounded-lg border border-gray-100 dark:border-gray-700 p-3">
+                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{dep.fullName}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{dep.relationship}</p>
+                        {dep.phone && (
+                          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{dep.phone}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           )}
 
           {/* Share / Invite */}

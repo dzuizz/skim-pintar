@@ -15,10 +15,11 @@ interface ProfileEditorProps {
     reminderChannel: string
     updatedAt?: string
   }
+  editable?: boolean
   onUpdate?: (updated: ProfileEditorProps['donor']) => void
 }
 
-export function ProfileEditor({ donor, onUpdate }: ProfileEditorProps) {
+export function ProfileEditor({ donor, editable = true, onUpdate }: ProfileEditorProps) {
   const t = useLocale()
   const [editing, setEditing] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -86,7 +87,7 @@ export function ProfileEditor({ donor, onUpdate }: ProfileEditorProps) {
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle>{t.dashboard.myProfile}</CardTitle>
-          {!editing && (
+          {editable && !editing && (
             <Button variant="outline" size="sm" onClick={() => setEditing(true)}>
               {t.dashboard.edit}
             </Button>
@@ -105,7 +106,7 @@ export function ProfileEditor({ donor, onUpdate }: ProfileEditorProps) {
           </div>
         )}
 
-        {editing ? (
+        {editable && editing ? (
           <div className="space-y-3">
             <Input
               label={t.dashboard.name}
