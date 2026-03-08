@@ -1,6 +1,7 @@
 'use client'
 
 import { Input } from '@/components/ui/input'
+import { useLocale } from '@/lib/use-locale'
 
 interface PledgeFormData {
   name: string
@@ -30,34 +31,36 @@ const channels = [
 ]
 
 export function StepContact({ data, onChange, errors, welcomeBack, onPhoneBlur }: StepContactProps) {
+  const t = useLocale()
+
   return (
     <div className="space-y-5">
       {welcomeBack && (
         <div className="rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 p-3">
           <p className="text-sm text-amber-700 dark:text-amber-400">
-            A member with this phone number already exists. Please visit the{' '}
+            {t.pledge.existingMember}{' '}
             <a href="/my" className="font-medium underline hover:text-amber-800 dark:hover:text-amber-300">
-              Member Dashboard
+              {t.pledge.memberDashboard}
             </a>{' '}
-            to manage your account.
+            {t.pledge.toManageAccount}
           </p>
         </div>
       )}
 
       <Input
-        label="Mobile Number"
-        placeholder="8123 4567"
+        label={t.pledge.mobileNumber}
+        placeholder={t.pledge.mobilePlaceholder}
         value={data.phone}
         onChange={(e) => onChange({ phone: e.target.value })}
         onBlur={onPhoneBlur}
         error={errors.phone}
-        helperText="Singapore mobile number (8 digits)"
+        helperText={t.pledge.mobileHelper}
         required
       />
 
       <Input
-        label="Name"
-        placeholder="Your full name"
+        label={t.pledge.name}
+        placeholder={t.pledge.namePlaceholder}
         value={data.name}
         onChange={(e) => onChange({ name: e.target.value })}
         error={errors.name}
@@ -65,27 +68,27 @@ export function StepContact({ data, onChange, errors, welcomeBack, onPhoneBlur }
       />
 
       <Input
-        label="Email (Optional)"
+        label={t.pledge.emailOptional}
         type="email"
-        placeholder="you@example.com"
+        placeholder={t.pledge.emailPlaceholder}
         value={data.email}
         onChange={(e) => onChange({ email: e.target.value })}
         error={errors.email}
       />
 
       <Input
-        label="NRIC Last 4 Digits (Optional)"
-        placeholder="e.g. 123A"
+        label={t.pledge.nricLabel}
+        placeholder={t.pledge.nricPlaceholder}
         value={data.nricLast4}
         onChange={(e) => onChange({ nricLast4: e.target.value.slice(0, 4).toUpperCase() })}
         error={errors.nricLast4}
         maxLength={4}
-        helperText="For 250% tax deduction receipt — if Ar-Raudhah is IPC registered"
+        helperText={t.pledge.nricHelper}
       />
 
       <div className="w-full">
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-          Preferred Reminder Channel
+          {t.pledge.preferredReminder}
         </label>
         <div className="flex flex-wrap gap-3">
           {channels.map((channel) => (

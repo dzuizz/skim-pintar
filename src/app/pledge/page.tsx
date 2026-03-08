@@ -52,12 +52,6 @@ function normalizePhone(phone: string): string {
   return phone
 }
 
-const frequencyLabels: Record<string, string> = {
-  MONTHLY: 'Monthly',
-  QUARTERLY: 'Quarterly',
-  ANNUAL: 'Annual',
-}
-
 const channelLabels: Record<string, string> = {
   WHATSAPP: 'WhatsApp',
   SMS: 'SMS',
@@ -68,24 +62,6 @@ const dayLabels: Record<number, string> = {
   1: '1st',
   15: '15th',
   25: '25th',
-}
-
-const tierLabels: Record<string, string> = {
-  INDIVIDUAL: 'Individual',
-  FAMILY: 'Family',
-  CUSTOM: 'Custom',
-}
-
-function reminderDayLabel(day: number, frequency: string): string {
-  const d = dayLabels[day] || `${day}th`
-  switch (frequency) {
-    case 'QUARTERLY':
-      return `${d} of every quarter`
-    case 'ANNUAL':
-      return `${d} of the year`
-    default:
-      return `${d} of every month`
-  }
 }
 
 function formatPhone(phone: string): string {
@@ -118,6 +94,30 @@ export default function PledgePage() {
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [welcomeBack, setWelcomeBack] = useState<string | null>(null)
   const [topCategories, setTopCategories] = useState<Category[]>([])
+
+  const tierLabels: Record<string, string> = {
+    INDIVIDUAL: t.pledge.tierIndividual,
+    FAMILY: t.pledge.tierFamily,
+    CUSTOM: t.pledge.tierCustom,
+  }
+
+  const frequencyLabels: Record<string, string> = {
+    MONTHLY: t.pledge.monthly,
+    QUARTERLY: t.pledge.quarterly,
+    ANNUAL: t.pledge.annual,
+  }
+
+  function reminderDayLabel(day: number, frequency: string): string {
+    const d = dayLabels[day] || `${day}th`
+    switch (frequency) {
+      case 'QUARTERLY':
+        return `${d} ${t.pledge.dayOfQuarter}`
+      case 'ANNUAL':
+        return `${d} ${t.pledge.dayOfYear}`
+      default:
+        return `${d} ${t.pledge.dayOfMonth}`
+    }
+  }
 
   // Fetch categories on mount
   useEffect(() => {
@@ -165,7 +165,6 @@ export default function PledgePage() {
         const data = await res.json()
         if (data.name) {
           setWelcomeBack(data.name)
-          // Don't pre-fill - user should go to member dashboard instead
         }
       }
     } catch {
@@ -177,29 +176,29 @@ export default function PledgePage() {
     const newErrors: Record<string, string> = {}
 
     if (!formData.name.trim()) {
-      newErrors.name = 'Name is required'
+      newErrors.name = t.pledge.nameRequired
     }
     if (!formData.phone.trim()) {
-      newErrors.phone = 'Mobile number is required'
+      newErrors.phone = t.pledge.phoneRequired
     } else {
       const digits = formData.phone.replace(/\D/g, '')
       const valid = digits.length === 8 || (digits.startsWith('65') && digits.length === 10)
       if (!valid) {
-        newErrors.phone = 'Enter a valid 8-digit Singapore mobile number'
+        newErrors.phone = t.pledge.phoneInvalid
       }
     }
     if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Enter a valid email address'
+      newErrors.email = t.pledge.emailInvalid
     }
 
     if (formData.tier === 'CUSTOM' && (!formData.amount || formData.amount < 10)) {
-      newErrors.amount = 'Custom amount must be at least $10'
+      newErrors.amount = t.pledge.customAmountMin
     } else if (!formData.amount || formData.amount < 1) {
-      newErrors.amount = 'Please select a giving level'
+      newErrors.amount = t.pledge.amountRequired
     }
 
     if (!agreed) {
-      newErrors.agreed = 'You must agree to continue'
+      newErrors.agreed = t.pledge.agreeRequired
     }
 
     setErrors(newErrors)
@@ -208,7 +207,7 @@ export default function PledgePage() {
 
   async function handleSubmit() {
     if (welcomeBack) {
-      setSubmitError('You already have an account. Please visit the Member Dashboard.')
+      setSubmitError(t.pledge.existingAccount)
       return
     }
     if (!validate()) return
@@ -245,7 +244,7 @@ export default function PledgePage() {
 
       router.push(`/pledge/success?donorId=${result.donorId}&pledgeId=${result.pledgeId}`)
     } catch {
-      setSubmitError('Network error. Please try again.')
+      setSubmitError(t.pledge.networkError)
     } finally {
       setSubmitting(false)
     }
@@ -257,148 +256,147 @@ export default function PledgePage() {
 
       {/* Page title */}
       <div className="bg-primary-800 pb-8">
-        <div className="mx-auto max-w-2xl px-6 pt-4 text-center">
+        <div className="mx-auto max-w-5xl px-6 pt-4 text-center">
           <h1 className="text-xl font-bold text-white sm:text-2xl">{t.pledge.pageTitle}</h1>
           <p className="mt-1 text-sm text-primary-200">{t.pledge.pageSubtitle}</p>
         </div>
       </div>
 
-      {/* Single scrollable form */}
-      <div className="mx-auto max-w-2xl px-6 py-8 space-y-8">
-        {/* Section 1: Contact Details */}
-        <section>
-          <h2 className="text-lg font-semibold text-primary-800 dark:text-primary-200 mb-4">
-            {t.pledge.sectionDetails}
-          </h2>
-          <StepContact
-            data={formData}
-            onChange={handleChange}
-            errors={errors}
-            welcomeBack={welcomeBack}
-            onPhoneBlur={handlePhoneBlur}
-          />
-        </section>
+      {/* Two-column layout on desktop */}
+      <div className="mx-auto max-w-5xl px-6 py-8">
+        <div className="lg:grid lg:grid-cols-5 lg:gap-8">
+          {/* Left column: Form */}
+          <div className="lg:col-span-3 space-y-8">
+            {/* Section 1: Contact Details */}
+            <section>
+              <h2 className="text-lg font-semibold text-primary-800 dark:text-primary-200 mb-4">
+                {t.pledge.sectionDetails}
+              </h2>
+              <StepContact
+                data={formData}
+                onChange={handleChange}
+                errors={errors}
+                welcomeBack={welcomeBack}
+                onPhoneBlur={handlePhoneBlur}
+              />
+            </section>
 
-        {/* Section 2: Membership Tier */}
-        <section>
-          <h2 className="text-lg font-semibold text-primary-800 dark:text-primary-200 mb-4">
-            {t.pledge.sectionGiving}
-          </h2>
-          <StepAmount data={formData} onChange={handleChange} errors={errors} />
-        </section>
+            {/* Section 2: Membership Tier */}
+            <section>
+              <h2 className="text-lg font-semibold text-primary-800 dark:text-primary-200 mb-4">
+                {t.pledge.sectionGiving}
+              </h2>
+              <StepAmount data={formData} onChange={handleChange} errors={errors} />
+            </section>
+          </div>
 
-        {/* Section 3: Confirmation */}
-        <section>
-          <h2 className="text-lg font-semibold text-primary-800 dark:text-primary-200 mb-4">
-            {t.pledge.sectionConfirm}
-          </h2>
+          {/* Right column: Summary (sticky on desktop) */}
+          <div className="lg:col-span-2 mt-8 lg:mt-0">
+            <div className="lg:sticky lg:top-20 space-y-6">
+              {/* Summary Card */}
+              <Card>
+                <CardContent className="py-6">
+                  <h3 className="text-base font-semibold text-primary-800 dark:text-primary-200 mb-4">
+                    {t.pledge.summaryTitle}
+                  </h3>
+                  <dl className="space-y-3">
+                    <div className="flex justify-between">
+                      <dt className="text-sm text-gray-500 dark:text-gray-400">{t.pledge.summaryName}</dt>
+                      <dd className="text-sm font-medium text-gray-900 dark:text-gray-100">{formData.name || '—'}</dd>
+                    </div>
+                    <div className="flex justify-between">
+                      <dt className="text-sm text-gray-500 dark:text-gray-400">{t.pledge.summaryMobile}</dt>
+                      <dd className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                        {formData.phone ? formatPhone(formData.phone) : '—'}
+                      </dd>
+                    </div>
+                    {formData.email && (
+                      <div className="flex justify-between">
+                        <dt className="text-sm text-gray-500 dark:text-gray-400">{t.pledge.summaryEmail}</dt>
+                        <dd className="text-sm font-medium text-gray-900 dark:text-gray-100">{formData.email}</dd>
+                      </div>
+                    )}
+                    <div className="border-t border-gray-100 dark:border-gray-700 pt-3 flex justify-between">
+                      <dt className="text-sm text-gray-500 dark:text-gray-400">{t.pledge.summaryTier}</dt>
+                      <dd className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                        {tierLabels[formData.tier]}
+                      </dd>
+                    </div>
+                    <div className="flex justify-between">
+                      <dt className="text-sm text-gray-500 dark:text-gray-400">{t.pledge.summaryAmount}</dt>
+                      <dd className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                        {formatCurrency(formData.amount)} / {frequencyLabels[formData.frequency]?.toLowerCase()}
+                      </dd>
+                    </div>
+                    <div className="flex justify-between">
+                      <dt className="text-sm text-gray-500 dark:text-gray-400">{t.pledge.summaryReminderDay}</dt>
+                      <dd className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                        {reminderDayLabel(formData.reminderDay, formData.frequency)}
+                      </dd>
+                    </div>
+                    <div className="flex justify-between">
+                      <dt className="text-sm text-gray-500 dark:text-gray-400">{t.pledge.summaryReminderVia}</dt>
+                      <dd className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                        {channelLabels[formData.reminderChannel]}
+                      </dd>
+                    </div>
+                    <div className="flex justify-between">
+                      <dt className="text-sm text-gray-500 dark:text-gray-400">{t.pledge.summaryPayment}</dt>
+                      <dd className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                        {formData.paymentMethod === 'EGIRO' ? t.pledge.egiro : t.pledge.payNowTransfer}
+                      </dd>
+                    </div>
+                  </dl>
+                </CardContent>
+              </Card>
 
-          {/* Summary Card */}
-          <Card>
-            <CardContent className="py-6">
-              <h3 className="text-base font-semibold text-primary-800 dark:text-primary-200 mb-4">
-                {t.pledge.summaryTitle}
-              </h3>
-              <dl className="space-y-3">
-                <div className="flex justify-between">
-                  <dt className="text-sm text-gray-500 dark:text-gray-400">Name</dt>
-                  <dd className="text-sm font-medium text-gray-900 dark:text-gray-100">{formData.name || '—'}</dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt className="text-sm text-gray-500 dark:text-gray-400">Mobile</dt>
-                  <dd className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                    {formData.phone ? formatPhone(formData.phone) : '—'}
-                  </dd>
-                </div>
-                {formData.email && (
-                  <div className="flex justify-between">
-                    <dt className="text-sm text-gray-500 dark:text-gray-400">Email</dt>
-                    <dd className="text-sm font-medium text-gray-900 dark:text-gray-100">{formData.email}</dd>
-                  </div>
-                )}
-                <div className="border-t border-gray-100 dark:border-gray-700 pt-3 flex justify-between">
-                  <dt className="text-sm text-gray-500 dark:text-gray-400">Tier</dt>
-                  <dd className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                    {tierLabels[formData.tier]}
-                  </dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt className="text-sm text-gray-500 dark:text-gray-400">Amount</dt>
-                  <dd className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                    {formatCurrency(formData.amount)} / {frequencyLabels[formData.frequency]?.toLowerCase()}
-                  </dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt className="text-sm text-gray-500 dark:text-gray-400">Reminder Day</dt>
-                  <dd className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                    {reminderDayLabel(formData.reminderDay, formData.frequency)}
-                  </dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt className="text-sm text-gray-500 dark:text-gray-400">Reminder Via</dt>
-                  <dd className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                    {channelLabels[formData.reminderChannel]}
-                  </dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt className="text-sm text-gray-500 dark:text-gray-400">Payment</dt>
-                  <dd className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                    {formData.paymentMethod === 'EGIRO' ? 'eGIRO (Auto-Debit)' : 'PayNow / Bank Transfer'}
-                  </dd>
-                </div>
-              </dl>
-            </CardContent>
-          </Card>
+              {/* Transparency Preview */}
+              {topCategories.length > 0 && (
+                <TransparencyPreview amount={formData.amount} categories={topCategories} />
+              )}
 
-          {/* Transparency Preview */}
-          {topCategories.length > 0 && (
-            <div className="mt-6">
-              <TransparencyPreview amount={formData.amount} categories={topCategories} />
+              {/* Disclaimer */}
+              <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-4">
+                <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                  {t.pledge.disclaimer}
+                </p>
+              </div>
+
+              {/* Agreement checkbox */}
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={agreed}
+                  onChange={(e) => setAgreed(e.target.checked)}
+                  className="mt-0.5 h-5 w-5 rounded border-gray-300 text-primary-700 focus:ring-primary-500"
+                />
+                <span className="text-sm text-gray-700 dark:text-gray-300">
+                  {t.pledge.agree}
+                </span>
+              </label>
+              {errors.agreed && (
+                <p className="text-xs text-red-600">{errors.agreed}</p>
+              )}
+
+              {/* Submit error */}
+              {submitError && (
+                <div className="rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-3 text-center">
+                  <p className="text-sm text-red-600">{submitError}</p>
+                </div>
+              )}
+
+              {/* Submit button */}
+              <Button
+                variant="secondary"
+                size="lg"
+                className="w-full"
+                onClick={handleSubmit}
+                disabled={submitting || !agreed}
+              >
+                {submitting ? t.pledge.submitting : t.pledge.submit}
+              </Button>
             </div>
-          )}
-
-          {/* Disclaimer */}
-          <div className="mt-6 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-4">
-            <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-              {t.pledge.disclaimer}
-            </p>
           </div>
-
-          {/* Agreement checkbox */}
-          <label className="mt-4 flex items-start gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={agreed}
-              onChange={(e) => setAgreed(e.target.checked)}
-              className="mt-0.5 h-5 w-5 rounded border-gray-300 text-primary-700 focus:ring-primary-500"
-            />
-            <span className="text-sm text-gray-700 dark:text-gray-300">
-              {t.pledge.agree}
-            </span>
-          </label>
-          {errors.agreed && (
-            <p className="mt-1.5 text-xs text-red-600">{errors.agreed}</p>
-          )}
-        </section>
-
-        {/* Submit error */}
-        {submitError && (
-          <div className="rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-3 text-center">
-            <p className="text-sm text-red-600">{submitError}</p>
-          </div>
-        )}
-
-        {/* Submit button */}
-        <div className="pb-8">
-          <Button
-            variant="secondary"
-            size="lg"
-            className="w-full"
-            onClick={handleSubmit}
-            disabled={submitting || !agreed}
-          >
-            {submitting ? t.pledge.submitting : t.pledge.submit}
-          </Button>
         </div>
       </div>
     </main>

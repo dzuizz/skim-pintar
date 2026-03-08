@@ -17,18 +17,18 @@ interface DonorDashboardProps {
   data: DonorData
 }
 
-type ConfirmAction = 'pause' | 'cancel' | 'resume' | 'reactivate' | null
-
-const tierLabels: Record<string, string> = {
-  INDIVIDUAL: 'Individual',
-  FAMILY: 'Family',
-  CUSTOM: 'Custom',
-}
+type ConfirmAction = 'pause' | 'cancel' | 'resume' | 'reactivate' | 'tierChange' | null
 
 const tierBenefits: Record<string, string[]> = {
   INDIVIDUAL: ['Community donor benefits', 'Funeral coverage (Khidmat Jenazah)', '20% course discount'],
   FAMILY: ['Family funeral coverage', '50% course discount', 'All Individual benefits'],
   CUSTOM: ['All Individual benefits', 'Flexible donation amount'],
+}
+
+const tierAmounts: Record<string, number> = {
+  INDIVIDUAL: 5,
+  FAMILY: 20,
+  CUSTOM: 10,
 }
 
 function pledgeStatusVariant(status: string): BadgeVariant {
@@ -97,7 +97,14 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
   const [confirmAction, setConfirmAction] = useState<ConfirmAction>(null)
   const [updating, setUpdating] = useState(false)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  const [selectedTier, setSelectedTier] = useState<string | null>(null)
   const t = useLocale()
+
+  const tierLabels: Record<string, string> = {
+    INDIVIDUAL: t.pledge.tierIndividual,
+    FAMILY: t.pledge.tierFamily,
+    CUSTOM: t.pledge.tierCustom,
+  }
 
   function frequencyLabel(freq: string): string {
     switch (freq) {
@@ -115,8 +122,6 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
     .reduce((sum, d) => sum + d.amount, 0)
 
   const receivedCount = donations.filter((d) => d.status === 'RECEIVED').length
-
-  // Find the next pending donation for PayNow QR
   const pendingDonation = donations.find((d) => d.status === 'PENDING')
 
   async function handlePledgeAction(action: ConfirmAction) {
@@ -130,6 +135,12 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
 
       if (action === 'reactivate') {
         res = await fetch(`/api/pledges/${pledge.id}/reactivate`, { method: 'POST' })
+      } else if (action === 'tierChange' && selectedTier) {
+        res = await fetch(`/api/pledges/${pledge.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tier: selectedTier, amount: tierAmounts[selectedTier] }),
+        })
       } else {
         const statusMap: Record<string, string> = {
           pause: 'PAUSED',
@@ -160,8 +171,10 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
         cancel: t.dashboard.cancelSuccess,
         resume: t.dashboard.resumeSuccess,
         reactivate: t.dashboard.reactivateSuccess,
+        tierChange: t.dashboard.tierChangeSuccess,
       }
       setSuccessMessage(messages[action])
+      setSelectedTier(null)
     } catch (error) {
       console.error('Pledge action error:', error)
       setSuccessMessage(null)
@@ -169,6 +182,11 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
       setUpdating(false)
       setConfirmAction(null)
     }
+  }
+
+  function openTierChange(newTier: string) {
+    setSelectedTier(newTier)
+    setConfirmAction('tierChange')
   }
 
   return (
@@ -225,7 +243,7 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
         </div>
       )}
 
-      {/* Suspended / Cancelled Notice with Reactivation */}
+      {/* Suspended / Cancelled Notice */}
       {pledge && (pledge.status === 'PAUSED' || pledge.status === 'CANCELLED') && (
         <div className="rounded-lg border border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/20 p-4">
           <div className="flex gap-3">
@@ -255,141 +273,344 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
         </div>
       )}
 
-      {/* A. Membership Card */}
-      {pledge && (
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>{t.dashboard.yourPledge}</CardTitle>
-              <Badge variant={pledgeStatusVariant(pledge.status)}>
-                {pledge.status}
-              </Badge>
-            </div>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t.dashboard.tier}</p>
-                <p className="text-lg font-semibold text-primary-800 dark:text-primary-200">
-                  {tierLabels[pledge.tier] || pledge.tier}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t.dashboard.amount}</p>
-                <p className="text-lg font-semibold text-primary-800 dark:text-primary-200">
-                  {formatCurrency(pledge.amount)}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t.dashboard.frequency}</p>
-                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                  {frequencyLabel(pledge.frequency)}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t.dashboard.reminder}</p>
-                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                  {reminderLabel(pledge.reminderDay, pledge.frequency)}
-                </p>
-              </div>
-              <div className="col-span-2">
-                <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t.dashboard.payment}</p>
-                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                  {pledge.paymentMethod === 'EGIRO' ? t.dashboard.egiroPayment : t.dashboard.manualPayment}
-                </p>
-              </div>
-            </div>
+      {/* Two-column layout on desktop */}
+      <div className="lg:grid lg:grid-cols-3 lg:gap-6">
+        {/* Left column (main content) */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* A. Membership Card */}
+          {pledge && (
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle>{t.dashboard.yourPledge}</CardTitle>
+                  <Badge variant={pledgeStatusVariant(pledge.status)}>
+                    {pledge.status}
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t.dashboard.tier}</p>
+                    <p className="text-lg font-semibold text-primary-800 dark:text-primary-200">
+                      {tierLabels[pledge.tier] || pledge.tier}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t.dashboard.amount}</p>
+                    <p className="text-lg font-semibold text-primary-800 dark:text-primary-200">
+                      {formatCurrency(pledge.amount)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t.dashboard.frequency}</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      {frequencyLabel(pledge.frequency)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t.dashboard.reminder}</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      {reminderLabel(pledge.reminderDay, pledge.frequency)}
+                    </p>
+                  </div>
+                  <div className="col-span-2">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t.dashboard.payment}</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      {pledge.paymentMethod === 'EGIRO' ? t.dashboard.egiroPayment : t.dashboard.manualPayment}
+                    </p>
+                  </div>
+                </div>
 
-            {/* Tier benefits */}
-            {tierBenefits[pledge.tier] && (
-              <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
-                <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">{t.dashboard.yourBenefits}</p>
-                <ul className="space-y-1.5">
-                  {tierBenefits[pledge.tier].map((benefit) => (
-                    <li key={benefit} className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-                      <svg className="h-4 w-4 text-primary-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                      </svg>
-                      {benefit}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+                {/* Tier benefits */}
+                {tierBenefits[pledge.tier] && (
+                  <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">{t.dashboard.yourBenefits}</p>
+                    <ul className="space-y-1.5">
+                      {tierBenefits[pledge.tier].map((benefit) => (
+                        <li key={benefit} className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                          <svg className="h-4 w-4 text-primary-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                          </svg>
+                          {benefit}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
 
-            {/* Action Buttons */}
-            <div className="mt-6 flex flex-wrap gap-3">
-              {pledge.status === 'ACTIVE' && (
+                {/* Tier Change */}
+                {pledge.status === 'ACTIVE' && (
+                  <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">{t.dashboard.changeTier}</p>
+                    <div className="flex flex-wrap gap-2">
+                      {(['INDIVIDUAL', 'FAMILY', 'CUSTOM'] as const).filter(t => t !== pledge.tier).map((tier) => (
+                        <button
+                          key={tier}
+                          onClick={() => openTierChange(tier)}
+                          className="px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-primary-400 hover:text-primary-700 dark:hover:text-primary-400 transition-colors"
+                        >
+                          {tierLabels[tier]} — {formatCurrency(tierAmounts[tier])}/mo
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Action Buttons */}
+                <div className="mt-6 flex flex-wrap gap-3">
+                  {pledge.status === 'ACTIVE' && (
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setConfirmAction('pause')}
+                        disabled={updating}
+                      >
+                        {t.dashboard.pausePledge}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                        onClick={() => setConfirmAction('cancel')}
+                        disabled={updating}
+                      >
+                        {t.dashboard.cancelPledge}
+                      </Button>
+                    </>
+                  )}
+                  {pledge.status === 'PAUSED' && (
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={() => setConfirmAction('resume')}
+                      disabled={updating}
+                    >
+                      {t.dashboard.resumePledge}
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {!pledge && (
+            <Card>
+              <CardContent className="py-8 text-center">
+                <p className="text-gray-500 dark:text-gray-400">{t.dashboard.noPledge}</p>
+                <Link
+                  href="/pledge"
+                  className="mt-2 inline-block text-sm font-medium text-primary-700 dark:text-primary-400 hover:underline"
+                >
+                  {t.dashboard.startDonating}
+                </Link>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* PayNow QR */}
+          {pledge && pledge.status === 'ACTIVE' && pendingDonation && pledge.paymentMethod !== 'EGIRO' && (
+            <Card id="payment-section">
+              <CardHeader>
+                <CardTitle>{t.dashboard.nextPayment}</CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                  {formatMonth(pendingDonation.cycleMonth)} — {formatCurrency(pendingDonation.amount)}
+                </p>
+                <PaymentMethods amount={pendingDonation.amount} reference={pendingDonation.reference} />
+              </CardContent>
+            </Card>
+          )}
+
+          {/* eGIRO status */}
+          {pledge && pledge.status === 'ACTIVE' && pledge.paymentMethod === 'EGIRO' && pendingDonation && (
+            <Card>
+              <CardHeader>
+                <CardTitle>{t.dashboard.egiroAutoDebit}</CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="flex items-center gap-3 rounded-lg bg-primary-50 dark:bg-primary-900/20 p-4">
+                  <svg className="h-8 w-8 text-primary-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <div>
+                    <p className="text-sm font-medium text-primary-800 dark:text-primary-200">
+                      {formatMonth(pendingDonation.cycleMonth)} — {formatCurrency(pendingDonation.amount)}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                      {t.dashboard.egiroDesc}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Contribution History */}
+          <Card>
+            <CardHeader>
+              <CardTitle>{t.dashboard.contributionHistory}</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              {donations.length === 0 ? (
+                <p className="text-sm text-gray-500 dark:text-gray-400 py-4 text-center">
+                  {t.dashboard.noRecords}
+                </p>
+              ) : (
                 <>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setConfirmAction('pause')}
-                    disabled={updating}
-                  >
-                    {t.dashboard.pausePledge}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-red-600 hover:bg-red-50 hover:text-red-700"
-                    onClick={() => setConfirmAction('cancel')}
-                    disabled={updating}
-                  >
-                    {t.dashboard.cancelPledge}
-                  </Button>
+                  {/* Table view on desktop, card view on mobile */}
+                  <div className="hidden sm:block overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-gray-100 dark:border-gray-700">
+                          <th className="text-left py-2 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Month</th>
+                          <th className="text-left py-2 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Reference</th>
+                          <th className="text-right py-2 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{t.dashboard.amount}</th>
+                          <th className="text-right py-2 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {donations.map((donation) => (
+                          <tr key={donation.id} className="border-b border-gray-50 dark:border-gray-800">
+                            <td className="py-2.5 text-gray-900 dark:text-gray-100 font-medium">{formatMonth(donation.cycleMonth)}</td>
+                            <td className="py-2.5 font-mono text-xs text-gray-400 dark:text-gray-500">{donation.reference}</td>
+                            <td className="py-2.5 text-right font-semibold text-gray-900 dark:text-gray-100">{formatCurrency(donation.amount)}</td>
+                            <td className="py-2.5 text-right">
+                              <Badge variant={donationStatusVariant(donation.status)}>
+                                {donation.status.toLowerCase()}
+                              </Badge>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  {/* Mobile card view */}
+                  <div className="sm:hidden space-y-3">
+                    {donations.map((donation) => (
+                      <div
+                        key={donation.id}
+                        className="flex items-center justify-between rounded-lg border border-gray-100 dark:border-gray-700 p-3"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                            {formatMonth(donation.cycleMonth)}
+                          </p>
+                          <p className="mt-0.5 font-mono text-xs text-gray-400 dark:text-gray-500">
+                            {donation.reference}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-3 flex-shrink-0">
+                          <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                            {formatCurrency(donation.amount)}
+                          </span>
+                          <Badge variant={donationStatusVariant(donation.status)}>
+                            {donation.status.toLowerCase()}
+                          </Badge>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Cumulative total */}
+                  <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                      {t.dashboard.totalContributed}
+                    </span>
+                    <span className="text-lg font-bold text-primary-800 dark:text-primary-200">
+                      {formatCurrency(cumulativeTotal)}
+                    </span>
+                  </div>
                 </>
               )}
-              {pledge.status === 'PAUSED' && (
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={() => setConfirmAction('resume')}
-                  disabled={updating}
-                >
-                  {t.dashboard.resumePledge}
-                </Button>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+            </CardContent>
+          </Card>
+        </div>
 
-      {!pledge && (
-        <Card>
-          <CardContent className="py-8 text-center">
-            <p className="text-gray-500 dark:text-gray-400">{t.dashboard.noPledge}</p>
-            <Link
-              href="/pledge"
-              className="mt-2 inline-block text-sm font-medium text-primary-700 dark:text-primary-400 hover:underline"
-            >
-              {t.dashboard.startDonating}
-            </Link>
-          </CardContent>
-        </Card>
-      )}
+        {/* Right column (sidebar on desktop) */}
+        <div className="mt-6 lg:mt-0 space-y-6">
+          {/* Impact Stats */}
+          {pledge && receivedCount > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>{t.dashboard.yourImpact}</CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="space-y-3">
+                  <div className="text-center p-4 rounded-lg bg-primary-50 dark:bg-primary-900/20">
+                    <p className="text-2xl font-bold text-primary-800 dark:text-primary-200">
+                      {formatCurrency(cumulativeTotal)}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{t.dashboard.totalContributed}</p>
+                  </div>
+                  <div className="text-center p-4 rounded-lg bg-gold-50 dark:bg-gold-900/20">
+                    <p className="text-2xl font-bold text-gold-700 dark:text-gold-400">
+                      {receivedCount}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{t.dashboard.monthsActive}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
-      {/* Profile Editor */}
-      <ProfileEditor
-        donor={{
-          id: donor.id,
-          name: donor.name,
-          email: donor.email,
-          address: donor.address,
-          reminderChannel: donor.reminderChannel,
-        }}
-        onUpdate={(updated) => {
-          setData((prev) => ({
-            ...prev,
-            donor: { ...prev.donor, ...updated },
-          }))
-        }}
-      />
+          {/* Profile Editor */}
+          <ProfileEditor
+            donor={{
+              id: donor.id,
+              name: donor.name,
+              email: donor.email,
+              address: donor.address,
+              reminderChannel: donor.reminderChannel,
+            }}
+            onUpdate={(updated) => {
+              setData((prev) => ({
+                ...prev,
+                donor: { ...prev.donor, ...updated },
+              }))
+            }}
+          />
 
-      {/* Dependants */}
-      {pledge && (
-        <DependantsList donorId={donor.id} tier={pledge.tier} />
-      )}
+          {/* Dependants */}
+          {pledge && (
+            <DependantsList donorId={donor.id} tier={pledge.tier} />
+          )}
+
+          {/* Share / Invite */}
+          <Card>
+            <CardContent className="py-6 text-center">
+              <h3 className="text-base font-semibold text-primary-800 dark:text-primary-200">
+                {t.dashboard.shareTitle}
+              </h3>
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                {t.dashboard.shareDesc}
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-4"
+                onClick={() => {
+                  const url = `${window.location.origin}/pledge`
+                  if (navigator.share) {
+                    navigator.share({ title: 'Skim Pintar — Masjid Ar-Raudhah', url })
+                  } else {
+                    navigator.clipboard.writeText(url)
+                  }
+                }}
+              >
+                {t.dashboard.shareLink}
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Transparency Preview */}
+          {pledge && categories.length > 0 && (
+            <TransparencyPreview amount={pledge.amount} categories={categories} />
+          )}
+        </div>
+      </div>
 
       {/* Confirmation Dialog */}
       {confirmAction && (
@@ -401,18 +622,27 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
                 {confirmAction === 'cancel' && t.dashboard.cancelConfirm}
                 {confirmAction === 'resume' && t.dashboard.resumeConfirm}
                 {confirmAction === 'reactivate' && t.dashboard.reactivateConfirm}
+                {confirmAction === 'tierChange' && t.dashboard.tierChangeConfirm}
               </h3>
               <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
                 {confirmAction === 'pause' && t.dashboard.pauseDesc}
                 {confirmAction === 'cancel' && t.dashboard.cancelDesc}
                 {confirmAction === 'resume' && t.dashboard.resumeDesc}
                 {confirmAction === 'reactivate' && t.dashboard.reactivateDesc}
+                {confirmAction === 'tierChange' && selectedTier && (
+                  <>
+                    {t.dashboard.tierChangeDesc}
+                    <span className="block mt-2 font-medium text-gray-900 dark:text-gray-100">
+                      {tierLabels[pledge?.tier || '']} ({formatCurrency(pledge?.amount || 0)}) → {tierLabels[selectedTier]} ({formatCurrency(tierAmounts[selectedTier])})
+                    </span>
+                  </>
+                )}
               </p>
               <div className="mt-6 flex gap-3 justify-end">
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setConfirmAction(null)}
+                  onClick={() => { setConfirmAction(null); setSelectedTier(null) }}
                   disabled={updating}
                 >
                   {t.dashboard.goBack}
@@ -436,160 +666,14 @@ export function DonorDashboard({ data: initialData }: DonorDashboardProps) {
                         ? t.dashboard.yesCancel
                         : confirmAction === 'reactivate'
                           ? t.dashboard.yesReactivate
-                          : t.dashboard.yesResume}
+                          : confirmAction === 'tierChange'
+                            ? t.dashboard.yesTierChange
+                            : t.dashboard.yesResume}
                 </Button>
               </div>
             </CardContent>
           </Card>
         </div>
-      )}
-
-      {/* B. Impact Stats */}
-      {pledge && receivedCount > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>{t.dashboard.yourImpact}</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="text-center p-3 rounded-lg bg-primary-50 dark:bg-primary-900/20">
-                <p className="text-2xl font-bold text-primary-800 dark:text-primary-200">
-                  {formatCurrency(cumulativeTotal)}
-                </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{t.dashboard.totalContributed}</p>
-              </div>
-              <div className="text-center p-3 rounded-lg bg-gold-50 dark:bg-gold-900/20">
-                <p className="text-2xl font-bold text-gold-700 dark:text-gold-400">
-                  {receivedCount}
-                </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{t.dashboard.monthsActive}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* C. PayNow QR for next pending payment (manual only) */}
-      {pledge && pledge.status === 'ACTIVE' && pendingDonation && pledge.paymentMethod !== 'EGIRO' && (
-        <Card id="payment-section">
-          <CardHeader>
-            <CardTitle>{t.dashboard.nextPayment}</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-              {formatMonth(pendingDonation.cycleMonth)} — {formatCurrency(pendingDonation.amount)}
-            </p>
-            <PaymentMethods amount={pendingDonation.amount} reference={pendingDonation.reference} />
-          </CardContent>
-        </Card>
-      )}
-
-      {/* C2. eGIRO status */}
-      {pledge && pledge.status === 'ACTIVE' && pledge.paymentMethod === 'EGIRO' && pendingDonation && (
-        <Card>
-          <CardHeader>
-            <CardTitle>{t.dashboard.egiroAutoDebit}</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="flex items-center gap-3 rounded-lg bg-primary-50 dark:bg-primary-900/20 p-4">
-              <svg className="h-8 w-8 text-primary-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <div>
-                <p className="text-sm font-medium text-primary-800 dark:text-primary-200">
-                  {formatMonth(pendingDonation.cycleMonth)} — {formatCurrency(pendingDonation.amount)}
-                </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                  {t.dashboard.egiroDesc}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* D. Contribution History */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{t.dashboard.contributionHistory}</CardTitle>
-        </CardHeader>
-        <CardContent className="pt-0">
-          {donations.length === 0 ? (
-            <p className="text-sm text-gray-500 dark:text-gray-400 py-4 text-center">
-              {t.dashboard.noRecords}
-            </p>
-          ) : (
-            <>
-              <div className="space-y-3">
-                {donations.map((donation) => (
-                  <div
-                    key={donation.id}
-                    className="flex items-center justify-between rounded-lg border border-gray-100 dark:border-gray-700 p-3"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                        {formatMonth(donation.cycleMonth)}
-                      </p>
-                      <p className="mt-0.5 font-mono text-xs text-gray-400 dark:text-gray-500">
-                        {donation.reference}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-3 flex-shrink-0">
-                      <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                        {formatCurrency(donation.amount)}
-                      </span>
-                      <Badge variant={donationStatusVariant(donation.status)}>
-                        {donation.status.toLowerCase()}
-                      </Badge>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Cumulative total */}
-              <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                  {t.dashboard.totalContributed}
-                </span>
-                <span className="text-lg font-bold text-primary-800 dark:text-primary-200">
-                  {formatCurrency(cumulativeTotal)}
-                </span>
-              </div>
-            </>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* E. Share / Invite */}
-      <Card>
-        <CardContent className="py-6 text-center">
-          <h3 className="text-base font-semibold text-primary-800 dark:text-primary-200">
-            {t.dashboard.shareTitle}
-          </h3>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            {t.dashboard.shareDesc}
-          </p>
-          <Button
-            variant="outline"
-            size="sm"
-            className="mt-4"
-            onClick={() => {
-              const url = `${window.location.origin}/pledge`
-              if (navigator.share) {
-                navigator.share({ title: 'Skim Pintar — Masjid Ar-Raudhah', url })
-              } else {
-                navigator.clipboard.writeText(url)
-              }
-            }}
-          >
-            {t.dashboard.shareLink}
-          </Button>
-        </CardContent>
-      </Card>
-
-      {/* F. Transparency Preview */}
-      {pledge && categories.length > 0 && (
-        <TransparencyPreview amount={pledge.amount} categories={categories} />
       )}
     </div>
   )

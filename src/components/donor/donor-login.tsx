@@ -65,7 +65,7 @@ export function DonorLogin({ onLogin }: DonorLoginProps) {
     setError(null)
 
     if (!phone.trim()) {
-      setError('Please enter your phone number.')
+      setError(t.donor.phoneRequired)
       return
     }
 
@@ -81,13 +81,13 @@ export function DonorLogin({ onLogin }: DonorLoginProps) {
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.error || 'Something went wrong. Please try again.')
+        setError(data.error || t.donor.errorGeneric)
         return
       }
 
       onLogin(data)
     } catch {
-      setError('Network error. Please check your connection and try again.')
+      setError(t.donor.networkError)
     } finally {
       setLoading(false)
     }
@@ -108,10 +108,10 @@ export function DonorLogin({ onLogin }: DonorLoginProps) {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input
-              label="Phone Number"
+              label={t.donor.phoneLabel}
               type="tel"
-              placeholder="8123 4567"
-              helperText="Singapore mobile number (8 digits)"
+              placeholder={t.donor.phonePlaceholder}
+              helperText={t.donor.phoneHelper}
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               disabled={loading}

@@ -3,6 +3,7 @@
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { formatCurrency } from '@/lib/utils'
+import { useLocale } from '@/lib/use-locale'
 
 interface PledgeFormData {
   name: string
@@ -24,75 +25,65 @@ interface StepAmountProps {
   errors: Record<string, string>
 }
 
-const tiers = [
-  {
-    id: 'INDIVIDUAL' as const,
-    name: 'Individual',
-    amount: 5,
-    tagline: 'Less than a kopi per week',
-    benefits: [
-      'Community donor benefits',
-      'Funeral coverage (Khidmat Jenazah)',
-      '20% course discount',
-    ],
-  },
-  {
-    id: 'FAMILY' as const,
-    name: 'Family',
-    amount: 20,
-    tagline: 'Best value for families',
-    benefits: [
-      'All Individual benefits',
-      'Family funeral coverage',
-      '50% course discount',
-    ],
-    popular: true,
-  },
-  {
-    id: 'CUSTOM' as const,
-    name: 'Custom',
-    amount: 10,
-    tagline: 'Choose your own amount',
-    benefits: [
-      'All Individual benefits',
-      'Flexible donation amount',
-      'Min $10/month',
-    ],
-  },
-]
-
-const frequencyOptions = [
-  { value: 'MONTHLY', label: 'Monthly' },
-  { value: 'QUARTERLY', label: 'Quarterly' },
-  { value: 'ANNUAL', label: 'Annual' },
-]
-
-function getReminderDayOptions(frequency: string) {
-  const suffix =
-    frequency === 'QUARTERLY'
-      ? 'of every quarter'
-      : frequency === 'ANNUAL'
-        ? 'of the year'
-        : 'of every month'
-  return [
-    { value: '1', label: `1st ${suffix}` },
-    { value: '15', label: `15th ${suffix}` },
-    { value: '25', label: `25th ${suffix}` },
-  ]
-}
-
-function frequencySuffix(frequency: string): string {
-  switch (frequency) {
-    case 'QUARTERLY':
-      return '/quarter'
-    case 'ANNUAL':
-      return '/year'
-    default:
-      return '/month'
-  }
-}
-
 export function StepAmount({ data, onChange, errors }: StepAmountProps) {
+  const t = useLocale()
+
+  const tiers = [
+    {
+      id: 'INDIVIDUAL' as const,
+      name: t.pledge.tierIndividual,
+      amount: 5,
+      tagline: t.pledge.tierIndividualTagline,
+      benefits: t.pledge.tierIndividualBenefits,
+    },
+    {
+      id: 'FAMILY' as const,
+      name: t.pledge.tierFamily,
+      amount: 20,
+      tagline: t.pledge.tierFamilyTagline,
+      benefits: t.pledge.tierFamilyBenefits,
+      popular: true,
+    },
+    {
+      id: 'CUSTOM' as const,
+      name: t.pledge.tierCustom,
+      amount: 10,
+      tagline: t.pledge.tierCustomTagline,
+      benefits: t.pledge.tierCustomBenefits,
+    },
+  ]
+
+  const frequencyOptions = [
+    { value: 'MONTHLY', label: t.pledge.monthly },
+    { value: 'QUARTERLY', label: t.pledge.quarterly },
+    { value: 'ANNUAL', label: t.pledge.annual },
+  ]
+
+  function getReminderDayOptions(frequency: string) {
+    const suffix =
+      frequency === 'QUARTERLY'
+        ? t.pledge.dayOfQuarter
+        : frequency === 'ANNUAL'
+          ? t.pledge.dayOfYear
+          : t.pledge.dayOfMonth
+    return [
+      { value: '1', label: `1st ${suffix}` },
+      { value: '15', label: `15th ${suffix}` },
+      { value: '25', label: `25th ${suffix}` },
+    ]
+  }
+
+  function frequencySuffix(frequency: string): string {
+    switch (frequency) {
+      case 'QUARTERLY':
+        return t.pledge.perQuarter
+      case 'ANNUAL':
+        return t.pledge.perYear
+      default:
+        return t.pledge.perMonth
+    }
+  }
+
   function selectTier(tier: typeof tiers[number]) {
     if (tier.id === 'CUSTOM') {
       onChange({ tier: 'CUSTOM', amount: data.customAmount ? parseFloat(data.customAmount) || 0 : 0 })
@@ -115,7 +106,7 @@ export function StepAmount({ data, onChange, errors }: StepAmountProps) {
     <div className="space-y-6">
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-          Choose your giving level
+          {t.pledge.chooseGivingLevel}
         </label>
         <div className="grid gap-4">
           {tiers.map((tier) => {
@@ -133,7 +124,7 @@ export function StepAmount({ data, onChange, errors }: StepAmountProps) {
               >
                 {tier.popular && (
                   <span className="absolute -top-2.5 right-4 bg-gold-500 text-white text-xs font-semibold px-2.5 py-0.5 rounded-full">
-                    Popular
+                    {t.pledge.popular}
                   </span>
                 )}
                 <div className="flex items-baseline justify-between mb-2">
@@ -149,7 +140,7 @@ export function StepAmount({ data, onChange, errors }: StepAmountProps) {
                       isSelected ? 'text-gold-700 dark:text-gold-400' : 'text-primary-800 dark:text-primary-200'
                     }`}
                   >
-                    {tier.id === 'CUSTOM' ? `From ${formatCurrency(tier.amount)}` : formatCurrency(tier.amount)}
+                    {tier.id === 'CUSTOM' ? `${t.pledge.from} ${formatCurrency(tier.amount)}` : formatCurrency(tier.amount)}
                     <span className="text-sm font-normal text-gray-500 dark:text-gray-400">{frequencySuffix(data.frequency)}</span>
                   </span>
                 </div>
@@ -170,12 +161,12 @@ export function StepAmount({ data, onChange, errors }: StepAmountProps) {
         </div>
       </div>
 
-      {/* Custom amount input — only shown when Custom tier selected */}
+      {/* Custom amount input */}
       {data.tier === 'CUSTOM' && (
         <div>
           <Input
-            label="Enter your monthly amount (min $10)"
-            placeholder="Enter amount in SGD"
+            label={t.pledge.customAmountLabel}
+            placeholder={t.pledge.customAmountPlaceholder}
             value={data.customAmount}
             onChange={(e) => handleCustomChange(e.target.value)}
             error={errors.amount}
@@ -185,7 +176,7 @@ export function StepAmount({ data, onChange, errors }: StepAmountProps) {
 
       {/* Frequency */}
       <Select
-        label="Donation Frequency"
+        label={t.pledge.donationFrequency}
         options={frequencyOptions}
         value={data.frequency}
         onChange={(e) =>
@@ -196,7 +187,7 @@ export function StepAmount({ data, onChange, errors }: StepAmountProps) {
 
       {/* Reminder Day */}
       <Select
-        label="Reminder Day"
+        label={t.pledge.reminderDay}
         options={getReminderDayOptions(data.frequency)}
         value={String(data.reminderDay)}
         onChange={(e) => onChange({ reminderDay: parseInt(e.target.value, 10) })}
@@ -206,7 +197,7 @@ export function StepAmount({ data, onChange, errors }: StepAmountProps) {
       {/* Payment Method */}
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-          Payment Method
+          {t.pledge.paymentMethod}
         </label>
         <div className="grid gap-3 sm:grid-cols-2">
           <button
@@ -219,10 +210,10 @@ export function StepAmount({ data, onChange, errors }: StepAmountProps) {
             }`}
           >
             <p className={`text-sm font-bold ${data.paymentMethod === 'MANUAL' ? 'text-gold-700 dark:text-gold-400' : 'text-primary-800 dark:text-primary-200'}`}>
-              PayNow / Bank Transfer
+              {t.pledge.payNowTransfer}
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              Pay manually each cycle via QR or transfer
+              {t.pledge.payNowDesc}
             </p>
           </button>
           <button
@@ -235,19 +226,17 @@ export function StepAmount({ data, onChange, errors }: StepAmountProps) {
             }`}
           >
             <p className={`text-sm font-bold ${data.paymentMethod === 'EGIRO' ? 'text-gold-700 dark:text-gold-400' : 'text-primary-800 dark:text-primary-200'}`}>
-              eGIRO (Auto-Debit)
+              {t.pledge.egiro}
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              Set up once, bank deducts automatically
+              {t.pledge.egiroDesc}
             </p>
           </button>
         </div>
         {data.paymentMethod === 'EGIRO' && (
           <div className="mt-3 rounded-lg bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 p-3">
             <p className="text-xs text-primary-800 dark:text-primary-300 leading-relaxed">
-              After confirming, you will be guided to set up eGIRO with your bank.
-              Your bank will auto-deduct on each cycle. If there are insufficient funds,
-              your bank will notify you and you can top up and retry.
+              {t.pledge.egiroInfo}
             </p>
           </div>
         )}

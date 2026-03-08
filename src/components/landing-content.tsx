@@ -357,7 +357,7 @@ export function LandingContent() {
         {/* Hero content */}
         <div className="relative z-10 max-w-4xl mx-auto px-6 py-32 text-center">
           <p className={`text-sm font-semibold text-gold-400 uppercase tracking-[0.2em] mb-5 transition-all duration-700 ${heroReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-            Masjid Ar-Raudhah · Bishan, Singapore
+            Masjid Ar-Raudhah · Bukit Batok, Singapore
           </p>
           <h1 className={`text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-white leading-[1.1] tracking-tight transition-all duration-700 delay-100 ${heroReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
             Be Part of Something<br />

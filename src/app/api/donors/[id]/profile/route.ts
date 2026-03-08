@@ -61,12 +61,7 @@ export async function PUT(
       return NextResponse.json(current)
     }
 
-    // Log audit entries
-    if (auditEntries.length > 0) {
-      await supabase.from('audit_log').insert(auditEntries)
-    }
-
-    // Update donor
+    // Update donor first (critical path)
     const { data: updated, error: updateErr } = await supabase
       .from('donors')
       .update(updates)
@@ -74,11 +69,20 @@ export async function PUT(
       .select()
       .single()
 
-    if (updateErr) throw updateErr
+    if (updateErr) {
+      console.error('Profile update DB error:', updateErr)
+      return NextResponse.json({ error: 'Failed to update profile. Please try again.' }, { status: 500 })
+    }
+
+    // Log audit entries (non-critical — don't fail the request)
+    if (auditEntries.length > 0) {
+      const { error: auditErr } = await supabase.from('audit_log').insert(auditEntries)
+      if (auditErr) console.error('Audit log error (non-critical):', auditErr)
+    }
 
     return NextResponse.json(updated)
   } catch (error) {
     console.error('Profile update error:', error)
-    return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 })
+    return NextResponse.json({ error: 'An unexpected error occurred. Please try again.' }, { status: 500 })
   }
 }

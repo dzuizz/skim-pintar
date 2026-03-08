@@ -12,8 +12,8 @@ export default function MyPage() {
     <main className="min-h-screen bg-warmWhite dark:bg-gray-900">
       <SiteNav />
 
-      {/* Content */}
-      <div className="mx-auto max-w-2xl px-6 py-8">
+      {/* Content — wider for dashboard, narrow for login */}
+      <div className={`mx-auto px-6 py-8 ${donorData ? 'max-w-5xl' : 'max-w-2xl'}`}>
         {donorData ? (
           <DonorDashboard data={donorData} />
         ) : (
