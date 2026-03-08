@@ -1,6 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 
+async function ensureDependantsTable() {
+  const { error } = await supabase.from('dependants').select('id').limit(1)
+  if (error?.code === '42P01' || error?.message?.includes('does not exist')) {
+    // Table doesn't exist — try to create it
+    try {
+      await supabase.rpc('exec_sql', {
+        sql: `
+          CREATE TABLE IF NOT EXISTS dependants (
+            id SERIAL PRIMARY KEY,
+            donor_id INTEGER NOT NULL REFERENCES donors(id) ON DELETE CASCADE,
+            name TEXT NOT NULL,
+            relationship TEXT NOT NULL,
+            nric_last4 TEXT,
+            created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+          );
+          CREATE INDEX IF NOT EXISTS idx_dependants_donor_id ON dependants(donor_id);
+        `,
+      })
+    } catch {
+      // RPC may not exist — fall through, the insert will fail with a clear message
+    }
+  }
+}
+
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -18,11 +43,18 @@ export async function GET(
       .eq('donor_id', donorId)
       .order('created_at')
 
-    if (error) throw error
+    if (error) {
+      // Table might not exist — return empty array instead of erroring
+      if (error.code === '42P01' || error.message?.includes('does not exist')) {
+        return NextResponse.json([])
+      }
+      throw error
+    }
     return NextResponse.json(data ?? [])
   } catch (error) {
     console.error('Dependants fetch error:', error)
-    return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 })
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
 
@@ -63,6 +95,9 @@ export async function POST(
       return NextResponse.json({ error: 'Name and relationship are required' }, { status: 400 })
     }
 
+    // Try to ensure the table exists
+    await ensureDependantsTable()
+
     const { data: created, error } = await supabase
       .from('dependants')
       .insert({
@@ -74,22 +109,30 @@ export async function POST(
       .select()
       .single()
 
-    if (error) throw error
+    if (error) {
+      console.error('Dependant insert error:', error)
+      if (error.code === '42P01' || error.message?.includes('does not exist')) {
+        return NextResponse.json(
+          { error: 'The dependants table has not been created yet. Please run the migration: supabase/migrations/20260308_add_dependants_audit_reminder.sql' },
+          { status: 500 },
+        )
+      }
+      return NextResponse.json({ error: error.message }, { status: 500 })
+    }
 
     // Audit log (non-blocking)
-    try {
-      await supabase.from('audit_log').insert({
-        donor_id: donorId,
-        action: 'ADD_DEPENDANT',
-        field_name: 'dependant',
-        new_value: `${name.trim()} (${relationship.trim()})`,
-      })
-    } catch { /* table may not exist */ }
+    await supabase.from('audit_log').insert({
+      donor_id: donorId,
+      action: 'ADD_DEPENDANT',
+      field_name: 'dependant',
+      new_value: `${name.trim()} (${relationship.trim()})`,
+    })
 
     return NextResponse.json(created, { status: 201 })
   } catch (error) {
     console.error('Add dependant error:', error)
-    return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 })
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
 
@@ -127,21 +170,22 @@ export async function DELETE(
       .delete()
       .eq('id', dependantId)
 
-    if (error) throw error
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 })
+    }
 
     // Audit log (non-blocking)
-    try {
-      await supabase.from('audit_log').insert({
-        donor_id: donorId,
-        action: 'REMOVE_DEPENDANT',
-        field_name: 'dependant',
-        old_value: `${dep.name} (${dep.relationship})`,
-      })
-    } catch { /* table may not exist */ }
+    await supabase.from('audit_log').insert({
+      donor_id: donorId,
+      action: 'REMOVE_DEPENDANT',
+      field_name: 'dependant',
+      old_value: `${dep.name} (${dep.relationship})`,
+    })
 
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Delete dependant error:', error)
-    return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 })
+    const message = error instanceof Error ? error.message : 'An unexpected error occurred'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
