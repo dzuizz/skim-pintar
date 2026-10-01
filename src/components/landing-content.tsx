@@ -242,7 +242,6 @@ function Counter({ target, suffix = '', active }: { target: number; suffix?: str
 
 export function LandingContent() {
   const [activeTab, setActiveTab] = useState<TabKey>('teenagers')
-  const [navScrolled, setNavScrolled] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [heroReady, setHeroReady] = useState(false)
 
@@ -252,13 +251,6 @@ export function LandingContent() {
   useEffect(() => {
     const t = setTimeout(() => setHeroReady(true), 300)
     return () => clearTimeout(t)
-  }, [])
-
-  // Nav scroll
-  useEffect(() => {
-    const onScroll = () => setNavScrolled(window.scrollY > 60)
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
   // Scroll reveal observer
@@ -277,26 +269,41 @@ export function LandingContent() {
   }, [])
 
   const tabData = BENEFIT_TABS[activeTab]
-  const navLink = `text-sm font-medium transition-colors ${navScrolled ? 'text-gray-600 dark:text-gray-300 hover:text-primary-800 dark:hover:text-primary-400' : 'text-white/80 hover:text-white'}`
+  const navLink = 'text-sm font-medium transition-colors text-gray-600 dark:text-gray-300 hover:text-primary-800 dark:hover:text-primary-400'
 
   return (
-    <main className="bg-white dark:bg-gray-900 overflow-x-hidden">
+    <main className="bg-white dark:bg-gray-900 overflow-x-hidden pt-16">
+
+      {/* Always visible on arrival, including before hydration or without JavaScript. */}
+      <aside role="note" aria-labelledby="site-status-heading" className="border-b-2 border-amber-400 bg-amber-50 text-amber-950 dark:border-amber-500 dark:bg-amber-950 dark:text-amber-50">
+        <div className="max-w-6xl mx-auto px-6 py-5">
+          <h2 id="site-status-heading" className="text-lg font-bold leading-7">
+            Unofficial prototype — under construction
+          </h2>
+          <p className="mt-2 text-sm leading-6">
+            This website is not yet an official website of Masjid Ar-Raudhah and has not been approved or endorsed by the mosque. We are correcting and verifying its content before seeking official approval.
+          </p>
+          <p className="mt-2 text-sm leading-6">
+            Information, benefits and payment details shown here are provisional. Please contact Masjid Ar-Raudhah directly for confirmed information, membership or donations.
+          </p>
+        </div>
+      </aside>
 
       {/* ================================================================ */}
       {/* NAVIGATION                                                       */}
       {/* ================================================================ */}
-      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${navScrolled ? 'bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-[0_1px_3px_rgba(6,95,70,0.08)]' : ''}`}>
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-900 shadow-[0_1px_3px_rgba(6,95,70,0.08)]">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
-            <div className={`w-8 h-8 rounded flex items-center justify-center font-bold text-sm ${navScrolled ? 'bg-primary-800 text-white' : 'bg-white/15 text-white'}`}>SP</div>
+            <div className="w-8 h-8 rounded flex items-center justify-center font-bold text-sm bg-primary-800 text-white">SP</div>
             <div>
-              <span className={`text-lg font-bold tracking-tight ${navScrolled ? 'text-primary-900 dark:text-white' : 'text-white'}`}>Skim Pintar</span>
-              <span className={`hidden sm:inline ml-2 text-xs font-medium ${navScrolled ? 'text-gray-400 dark:text-gray-500' : 'text-white/50'}`}>Masjid Ar-Raudhah</span>
+              <span className="text-lg font-bold tracking-tight text-primary-900 dark:text-white">Skim Pintar</span>
+              <span className="hidden xl:inline ml-2 text-xs font-medium text-gray-600 dark:text-gray-300">Unofficial prototype</span>
             </div>
           </Link>
 
           {/* Desktop nav */}
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden lg:flex items-center gap-8">
             <a href="#benefits" className={navLink}>Benefits</a>
             <a href="#pricing" className={navLink}>Pricing</a>
             <a href="#impact" className={navLink}>Impact</a>
@@ -308,15 +315,15 @@ export function LandingContent() {
           </div>
 
           {/* Mobile hamburger */}
-          <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="md:hidden relative w-6 h-5" aria-label="Toggle menu">
-            <span className={`absolute left-0 h-0.5 w-6 rounded transition-all duration-300 ${navScrolled ? 'bg-gray-700 dark:bg-gray-200' : 'bg-white'} ${mobileMenuOpen ? 'top-2.5 rotate-45' : 'top-0'}`} />
-            <span className={`absolute left-0 top-2 h-0.5 w-6 rounded transition-all duration-300 ${navScrolled ? 'bg-gray-700 dark:bg-gray-200' : 'bg-white'} ${mobileMenuOpen ? 'opacity-0' : ''}`} />
-            <span className={`absolute left-0 h-0.5 w-6 rounded transition-all duration-300 ${navScrolled ? 'bg-gray-700 dark:bg-gray-200' : 'bg-white'} ${mobileMenuOpen ? 'top-2.5 -rotate-45' : 'top-4'}`} />
+          <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="lg:hidden relative w-6 h-5" aria-label="Toggle menu">
+            <span className={`absolute left-0 h-0.5 w-6 rounded transition-all duration-300 bg-gray-700 dark:bg-gray-200 ${mobileMenuOpen ? 'top-2.5 rotate-45' : 'top-0'}`} />
+            <span className={`absolute left-0 top-2 h-0.5 w-6 rounded transition-all duration-300 bg-gray-700 dark:bg-gray-200 ${mobileMenuOpen ? 'opacity-0' : ''}`} />
+            <span className={`absolute left-0 h-0.5 w-6 rounded transition-all duration-300 bg-gray-700 dark:bg-gray-200 ${mobileMenuOpen ? 'top-2.5 -rotate-45' : 'top-4'}`} />
           </button>
         </div>
 
         {/* Mobile menu */}
-        <div className={`md:hidden overflow-hidden transition-all duration-300 ${mobileMenuOpen ? 'max-h-80 border-t border-gray-100 dark:border-gray-800' : 'max-h-0'} bg-white dark:bg-gray-900`}>
+        <div className={`lg:hidden overflow-hidden transition-all duration-300 ${mobileMenuOpen ? 'max-h-80 border-t border-gray-100 dark:border-gray-800' : 'max-h-0'} bg-white dark:bg-gray-900`}>
           <div className="px-6 py-4 flex flex-col gap-3">
             <a href="#benefits" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-gray-700 dark:text-gray-200 py-2">Benefits</a>
             <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-gray-700 dark:text-gray-200 py-2">Pricing</a>
@@ -364,7 +371,7 @@ export function LandingContent() {
             <span className="text-gold-400">Greater Than Yourself</span>
           </h1>
           <p className={`mt-6 text-base sm:text-lg text-primary-100/90 max-w-2xl mx-auto leading-relaxed transition-all duration-700 delay-200 ${heroReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
-            Join Skim Pintar — Masjid Ar-Raudhah&apos;s official membership programme powering aLIVE, Raudhatul Quran, Khidmat Jenazah, and more. From just $5/month.
+            Explore a prototype for Skim Pintar. Content and features are being corrected and verified; this website is not yet approved by Masjid Ar-Raudhah.
           </p>
           <p className={`mt-4 text-sm italic text-primary-200/70 max-w-xl mx-auto transition-all duration-700 delay-250 ${heroReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
             &ldquo;The example of those who spend their wealth in the cause of Allah is that of a grain that sprouts seven ears; in each ear a hundred grains.&rdquo;
@@ -675,7 +682,7 @@ export function LandingContent() {
                 <span className="text-lg font-bold text-white tracking-tight">Skim Pintar</span>
               </div>
               <p className="mt-3 text-sm text-primary-300/60 leading-relaxed">
-                Masjid Ar-Raudhah&apos;s official membership programme. Building community through education, welfare, and faith since 1993.
+                Unofficial Skim Pintar prototype. Under construction while information is corrected and verified; not yet approved or endorsed by Masjid Ar-Raudhah.
               </p>
               <p className="mt-3 text-xs text-primary-300/40">1 Jln Kuak, Singapore 799316</p>
               <p className="mt-1 text-xs text-primary-300/40">PayNow UEN: S93MQ0024E</p>
@@ -723,7 +730,7 @@ export function LandingContent() {
           {/* Bottom bar */}
           <div className="mt-12 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3">
             <p className="text-xs text-primary-300/40">
-              Masjid Ar-Raudhah. All rights reserved. 2026
+              Skim Pintar prototype · Unofficial · Under construction
             </p>
             <Link href="/admin" className="text-xs text-primary-300/20 hover:text-primary-300/50 transition-colors">
               Admin

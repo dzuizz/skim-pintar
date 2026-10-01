@@ -14,9 +14,9 @@ const crimsonPro = Crimson_Pro({
 });
 
 export const metadata: Metadata = {
-  title: "Skim Pintar | Masjid Ar-Raudhah",
+  title: "Skim Pintar — Unofficial Prototype | Under Construction",
   description:
-    "Join 2,000+ members building community through education, welfare, and faith at Masjid Ar-Raudhah — from just $5/month.",
+    "An unofficial Skim Pintar prototype, not yet approved or endorsed by Masjid Ar-Raudhah. Under construction while content is corrected and verified before seeking official approval.",
 };
 
 export default function RootLayout({
